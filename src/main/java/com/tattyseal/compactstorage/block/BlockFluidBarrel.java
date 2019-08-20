@@ -1,19 +1,13 @@
 package com.tattyseal.compactstorage.block;
 
-import com.tattyseal.compactstorage.CompactStorage;
 import com.tattyseal.compactstorage.tileentity.TileEntityBarrelFluid;
 
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.world.World;
+import net.minecraft.world.IBlockReader;
 
 public class BlockFluidBarrel extends BlockBarrel {
-	@Override
-	public void init() {
-		setRegistryName("fluid_barrel");
-		setTranslationKey(CompactStorage.MODID + ".fluid_barrel");
-	}
 
 	@Override
 	public BlockRenderLayer getRenderLayer() {
@@ -21,7 +15,7 @@ public class BlockFluidBarrel extends BlockBarrel {
 	}
 
 	@Override
-	public TileEntity createTileEntity(World world, IBlockState state) {
+	public TileEntity createTileEntity(BlockState state, IBlockReader reader) {
 		return new TileEntityBarrelFluid();
 	}
 }

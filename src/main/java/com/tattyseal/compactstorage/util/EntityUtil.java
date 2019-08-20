@@ -1,17 +1,15 @@
 package com.tattyseal.compactstorage.util;
 
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
 
-/**
- * Created by Toby on 07/11/2014.
- */
 public class EntityUtil {
-	public static EnumFacing get2dOrientation(EntityLivingBase entityliving) {
-		EnumFacing[] orientationTable = { EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.NORTH, EnumFacing.EAST };
-		int orientationIndex = MathHelper.floor((entityliving.rotationYaw + 45.0) / 90.0) & 3;
 
-		return orientationTable[orientationIndex];
+	static Direction[] HORIZONTALS = { Direction.SOUTH, Direction.WEST, Direction.NORTH, Direction.EAST };
+
+	public static Direction get2dOrientation(LivingEntity entityliving) {
+		int orientationIndex = MathHelper.floor((entityliving.rotationYaw + 45.0) / 90.0) & 3;
+		return HORIZONTALS[orientationIndex];
 	}
 }

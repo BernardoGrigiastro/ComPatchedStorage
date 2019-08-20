@@ -1,118 +1,83 @@
 package com.tattyseal.compactstorage.block;
 
-import com.tattyseal.compactstorage.CompactStorage;
 import com.tattyseal.compactstorage.tileentity.IBarrel;
 import com.tattyseal.compactstorage.tileentity.TileEntityBarrel;
 import com.tattyseal.compactstorage.util.EntityUtil;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.HorizontalBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ToolType;
 
-public class BlockBarrel extends Block {
-	public static final PropertyEnum<EnumFacing> FACING = PropertyEnum.create("facing", EnumFacing.class, new EnumFacing[] { EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST });
+public class BlockBarrel extends HorizontalBlock {
 
 	public BlockBarrel() {
-		super(Material.IRON);
-		setHardness(5f);
-		setHarvestLevel("pickaxe", 2);
-		init();
-		setCreativeTab(CompactStorage.TAB);
-	}
-
-	public void init() {
-		setRegistryName("barrel");
-		setTranslationKey(CompactStorage.MODID + ".barrel");
+		super(Block.Properties.create(Material.IRON).hardnessAndResistance(5).harvestLevel(2).harvestTool(ToolType.PICKAXE));
 	}
 
 	@Override
-	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[] { FACING });
+	protected void fillStateContainer(Builder<Block, BlockState> builder) {
+		builder.add(HORIZONTAL_FACING);
 	}
 
 	@Override
-	public int getMetaFromState(IBlockState state) {
-		return ((EnumFacing) state.getProperties().get(FACING)).ordinal();
+	public BlockState getStateForPlacement(BlockItemUseContext context) {
+		return getDefaultState().with(HORIZONTAL_FACING, EntityUtil.get2dOrientation(context.getPlayer()));
 	}
 
 	@Override
-	public IBlockState getStateFromMeta(int meta) {
-		EnumFacing facing = EnumFacing.values()[meta];
+	@Deprecated
+	public void onBlockClicked(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+		super.onBlockClicked(state, world, pos, player);
 
-		if (FACING.getAllowedValues().contains(facing)) { return getDefaultState().withProperty(FACING, EnumFacing.values()[meta]); }
-
-		return getDefaultState();
-	}
-
-	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-
-		worldIn.setBlockState(pos, state.withProperty(FACING, EntityUtil.get2dOrientation(placer)));
-	}
-
-	@Override
-	public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
-		super.onBlockClicked(worldIn, pos, playerIn);
-
-		if (!worldIn.isRemote) {
-			IBarrel barrel = (IBarrel) worldIn.getTileEntity(pos);
+		if (!world.isRemote) {
+			IBarrel barrel = (IBarrel) world.getTileEntity(pos);
 
 			if (barrel != null) {
-				ItemStack stack = barrel.giveItems(playerIn);
+				ItemStack stack = barrel.giveItems(player);
 
 				if (!stack.isEmpty()) {
-					EntityItem item = new EntityItem(worldIn, playerIn.posX, playerIn.posY, playerIn.posZ);
+					ItemEntity item = new ItemEntity(world, player.posX, player.posY, player.posZ);
 					item.setItem(stack);
 
-					worldIn.spawnEntity(item);
+					world.addEntity(item);
 				}
 			}
 		}
 	}
 
 	@Override
-	public boolean isFullBlock(IBlockState state) {
-		return false;
-	}
+	public boolean onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+		if (player.isSneaking()) return false;
 
-	@Override
-	public boolean isOpaqueCube(IBlockState state) {
-		return false;
-	}
-
-	@Override
-	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if (playerIn.isSneaking()) return false;
-
-		if (!worldIn.isRemote) {
-			IBarrel barrel = (IBarrel) worldIn.getTileEntity(pos);
+		if (!world.isRemote) {
+			IBarrel barrel = (IBarrel) world.getTileEntity(pos);
 
 			if (barrel != null) {
-				if (playerIn.getHeldItem(EnumHand.MAIN_HAND).isEmpty()) {
-					ItemStack stack = barrel.giveItems(playerIn);
+				if (player.getHeldItem(Hand.MAIN_HAND).isEmpty()) {
+					ItemStack stack = barrel.giveItems(player);
 
 					if (!stack.isEmpty()) {
-						EntityItem item = new EntityItem(worldIn, playerIn.posX, playerIn.posY, playerIn.posZ);
+						ItemEntity item = new ItemEntity(world, player.posX, player.posY, player.posZ);
 						item.setItem(stack);
 
-						worldIn.spawnEntity(item);
+						world.addEntity(item);
 					}
 
 				} else {
-					playerIn.setHeldItem(EnumHand.MAIN_HAND, barrel.takeItems(playerIn.getHeldItem(EnumHand.MAIN_HAND), playerIn));
+					player.setHeldItem(Hand.MAIN_HAND, barrel.takeItems(player.getHeldItem(Hand.MAIN_HAND), player));
 					return true;
 				}
 			}
@@ -122,7 +87,8 @@ public class BlockBarrel extends Block {
 	}
 
 	@Override
-	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+	@Deprecated
+	public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
 		TileEntityBarrel barrel = (TileEntityBarrel) world.getTileEntity(pos);
 
 		if (!world.isRemote && barrel != null) {
@@ -136,16 +102,16 @@ public class BlockBarrel extends Block {
 			}
 		}
 
-		super.breakBlock(world, pos, state);
+		super.onReplaced(state, world, pos, newState, isMoving);
 	}
 
 	@Override
-	public boolean hasTileEntity(IBlockState state) {
+	public boolean hasTileEntity(BlockState state) {
 		return true;
 	}
 
 	@Override
-	public TileEntity createTileEntity(World worldIn, IBlockState state) {
+	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
 		return new TileEntityBarrel();
 	}
 }

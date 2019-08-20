@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.items.ItemStackHandler;
 
 public class BlockChestBuilder extends Block {
+
 	public BlockChestBuilder() {
 		super(Material.IRON);
 		setTranslationKey(CompactStorage.MODID + ".chest_builder");

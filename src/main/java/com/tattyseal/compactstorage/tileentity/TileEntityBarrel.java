@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import com.tattyseal.compactstorage.inventory.BarrelItemHandler;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -32,17 +32,17 @@ public class TileEntityBarrel extends TileEntity implements IBarrel {
 	}
 
 	@Override
-	public ItemStack giveItems(EntityPlayer player) {
+	public ItemStack giveItems(PlayerEntity player) {
 		ItemStack stack = tryTakeStack(player, item.getMaxStackSize(), false);
 		return stack;
 	}
 
 	@Override
-	public ItemStack takeItems(ItemStack stack, EntityPlayer player) {
+	public ItemStack takeItems(ItemStack stack, PlayerEntity player) {
 		return insertItems(stack, player, false);
 	}
 
-	public ItemStack tryTakeStack(EntityPlayer player, int amount, boolean simulate) {
+	public ItemStack tryTakeStack(PlayerEntity player, int amount, boolean simulate) {
 		if (count > 0) {
 			ItemStack stack = item.copy();
 			stack.setCount(Math.min(count, Math.min(stack.getMaxStackSize(), amount)));
@@ -59,7 +59,7 @@ public class TileEntityBarrel extends TileEntity implements IBarrel {
 		return ItemStack.EMPTY;
 	}
 
-	public ItemStack insertItems(ItemStack stack, EntityPlayer player, boolean simulate) {
+	public ItemStack insertItems(ItemStack stack, PlayerEntity player, boolean simulate) {
 		ItemStack workingStack = stack.copy();
 		if (workingStack.isEmpty()) return ItemStack.EMPTY;
 

@@ -16,7 +16,6 @@ import com.tattyseal.compactstorage.item.ItemBackpack;
 import com.tattyseal.compactstorage.item.ItemBlockChest;
 import com.tattyseal.compactstorage.packet.MessageCraftChest;
 import com.tattyseal.compactstorage.packet.MessageUpdateBuilder;
-import com.tattyseal.compactstorage.proxy.IProxy;
 import com.tattyseal.compactstorage.tileentity.TileEntityBarrel;
 import com.tattyseal.compactstorage.tileentity.TileEntityBarrelFluid;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
@@ -24,48 +23,41 @@ import com.tattyseal.compactstorage.tileentity.TileEntityChestBuilder;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
 import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.oredict.OreDictionary;
 
-/**
- * Created by Toby on 06/11/2014.
- * Updated for 3.0 on the 16/02/2018
- */
-@Mod(modid = CompactStorage.MODID, name = CompactStorage.NAME, version = CompactStorage.VERSION, guiFactory = "com.tattyseal.compactstorage.client.gui.factory.CompactStorageGuiFactory")
+@Mod(CompactStorage.MODID)
 public class CompactStorage {
 
 	public static final String MODID = "compactstorage";
-	public static final String NAME = "Compact Storage";
-	public static final String VERSION = "4.0.0";
-	public static final CreativeTabs TAB = new CreativeTabCompactStorage();
+	public static final ItemGroup TAB = new CreativeTabCompactStorage();
 	public static final Logger LOGGER = LogManager.getLogger(MODID);
-	public static final SimpleNetworkWrapper NETWORK = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
-
-	@Instance
-	public static CompactStorage instance;
-
-	@SidedProxy(clientSide = "com.tattyseal.compactstorage.proxy.ClientProxy", serverSide = "com.tattyseal.compactstorage.proxy.ServerProxy", modId = CompactStorage.MODID)
-	public static IProxy proxy;
+	//Formatter::off
+    public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
+            .named(new ResourceLocation(MODID, MODID))
+            .clientAcceptedVersions(s->true)
+            .serverAcceptedVersions(s->true)
+            .networkProtocolVersion(() -> "1.0.0")
+            .simpleChannel();
+    //Formatter::on
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {

@@ -1,68 +1,55 @@
 package com.tattyseal.compactstorage.block;
 
-import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 
 import com.tattyseal.compactstorage.CompactRegistry;
 import com.tattyseal.compactstorage.CompactStorage;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.BlockFaceShape;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.loot.LootContext.Builder;
+import net.minecraftforge.common.ToolType;
 
-/**
- * Created by Toby on 06/11/2014.
- */
 public class BlockChest extends Block {
-	protected static final AxisAlignedBB NOT_CONNECTED_AABB = new AxisAlignedBB(0.0625D, 0.0D, 0.0625D, 0.9375D, 0.875D, 0.9375D);
+
+	public static final VoxelShape SHAPE = VoxelShapes.create(new AxisAlignedBB(0.0625D, 0.0D, 0.0625D, 0.9375D, 0.875D, 0.9375D));
 
 	public BlockChest() {
-		super(Material.WOOD);
-		setTranslationKey(CompactStorage.MODID + ".chest");
-		setRegistryName("chest");
-		setCreativeTab(CompactStorage.TAB);
-		setHardness(2F);
-		setResistance(2F);
-		setHarvestLevel("axe", 1);
+		super(Block.Properties.create(Material.WOOD).hardnessAndResistance(2).harvestLevel(1).harvestTool(ToolType.AXE));
 	}
 
 	@Override
-	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-		return NOT_CONNECTED_AABB;
+	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+		return SHAPE;
 	}
 
 	@Override
-	public boolean isFullCube(IBlockState state) {
-		return false;
-	}
-
-	@Override
-	public boolean isOpaqueCube(IBlockState state) {
-		return false;
-	}
-
-	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float x, float y, float z) {
+	public boolean onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 		if (!world.isRemote) {
 			if (!player.isSneaking()) {
 				player.openGui(CompactStorage.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
@@ -74,7 +61,7 @@ public class BlockChest extends Block {
 				if (chest != null && !chest.isRetaining() && !held.isEmpty() && held.getItem() == Items.DIAMOND) {
 					chest.setRetaining(true);
 					held.setCount(held.getCount() - 1);
-					player.sendMessage(new TextComponentString(TextFormatting.AQUA + "Chest will now retain items when broken!"));
+					player.sendMessage(new TranslationTextComponent(TextFormatting.AQUA + "FIX: Chest will now retain items when broken!"));
 					world.playSound(null, pos, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 1);
 					chest.updateBlock();
 				}
@@ -85,62 +72,59 @@ public class BlockChest extends Block {
 	}
 
 	@Override
-	public boolean hasTileEntity(IBlockState state) {
+	public boolean hasTileEntity(BlockState state) {
 		return true;
 	}
 
 	@Override
-	public TileEntity createTileEntity(World world, IBlockState state) {
+	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
 		return new TileEntityChest();
 	}
 
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.INVISIBLE;
+	public BlockRenderType getRenderType(BlockState state) {
+		return BlockRenderType.INVISIBLE;
 	}
 
 	@Override
-	public void breakBlock(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
+	@Deprecated
+	public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
 		TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
 
 		if (!world.isRemote && chest != null) {
 			ItemStack stack = new ItemStack(CompactRegistry.CHEST);
 
 			if (chest.isRetaining()) {
-				chest.writeToNBT(stack.getOrCreateSubCompound("BlockEntityTag"));
+				chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
 			} else {
 				for (int slot = 0; slot < chest.getItems().getSlots(); slot++) {
 					Block.spawnAsEntity(world, pos, chest.getItems().getStackInSlot(slot));
 				}
-				chest.writeToNBT(stack.getOrCreateSubCompound("BlockEntityTag")).removeTag("items");
+				chest.write(stack.getOrCreateChildTag("BlockEntityTag")).remove("items");
 			}
 
-			world.spawnEntity(new EntityItem(world, pos.getX(), pos.getY(), pos.getZ(), stack));
+			world.addEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), stack));
 		}
 
-		super.breakBlock(world, pos, state);
+		super.onReplaced(state, world, pos, newState, isMoving);
 	}
 
 	@Override
-	public void getSubBlocks(CreativeTabs itemIn, NonNullList<ItemStack> items) {
-
+	public void fillItemGroup(ItemGroup group, NonNullList<ItemStack> items) {
+		super.fillItemGroup(group, items);
 	}
 
 	@Override
-	@Nonnull
-	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		ItemStack stack = new ItemStack(CompactRegistry.CHEST, 1);
+	public ItemStack getItem(IBlockReader world, BlockPos pos, BlockState state) {
+		ItemStack stack = new ItemStack(this);
 		TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
-		chest.writeToNBT(stack.getOrCreateSubCompound("BlockEntityTag"));
+		chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
 		return stack;
 	}
 
 	@Override
-	public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+	public List<ItemStack> getDrops(BlockState state, Builder builder) {
+		return Collections.emptyList();
 	}
 
-	@Override
-	public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
-		return BlockFaceShape.UNDEFINED;
-	}
 }

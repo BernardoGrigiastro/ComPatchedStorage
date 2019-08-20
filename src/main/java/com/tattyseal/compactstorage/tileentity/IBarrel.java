@@ -1,13 +1,13 @@
 package com.tattyseal.compactstorage.tileentity;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
 public interface IBarrel {
 
-	public ItemStack giveItems(EntityPlayer player);
+	public ItemStack giveItems(PlayerEntity player);
 
-	public ItemStack takeItems(ItemStack stack, EntityPlayer player);
+	public ItemStack takeItems(ItemStack stack, PlayerEntity player);
 
 	public int color();
 }
