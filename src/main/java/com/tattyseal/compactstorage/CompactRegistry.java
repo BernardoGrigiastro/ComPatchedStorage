@@ -45,7 +45,7 @@ public class CompactRegistry {
 
 	@SubscribeEvent
 	public static void blocks(Register<Block> e) {
-		e.getRegistry().registerAll(new BlockChest(), new BlockChestBuilder(), new BlockBarrel(), new BlockFluidBarrel());
+		e.getRegistry().registerAll(new BlockChest().setRegistryName("chest"), new BlockChestBuilder().setRegistryName("chest_builder"), new BlockBarrel().setRegistryName("barrel"), new BlockFluidBarrel().setRegistryName("fluid_barrel"));
 	}
 
 	@SubscribeEvent
@@ -53,20 +53,19 @@ public class CompactRegistry {
 		Item i = new ItemBlockChest().setRegistryName(CHEST.getRegistryName());
 		e.getRegistry().register(i);
 
-		i = new BlockItem(CompactRegistry.CHEST_BUILDER, new Item.Properties().group(CompactStorage.TAB));
-		i.setRegistryName(CompactRegistry.CHEST_BUILDER.getRegistryName());
+		i = new BlockItem(CHEST_BUILDER, new Item.Properties().group(CompactStorage.TAB));
+		i.setRegistryName(CHEST_BUILDER.getRegistryName());
 		e.getRegistry().register(i);
 
-		i = new ItemBackpack();
-		i.setRegistryName("backpack");
+		i = new ItemBackpack().setRegistryName("backpack");
 		e.getRegistry().register(i);
 
-		i = new BlockItem(CompactRegistry.BARREL, new Item.Properties().group(CompactStorage.TAB));
-		i.setRegistryName(CompactRegistry.BARREL.getRegistryName());
+		i = new BlockItem(BARREL, new Item.Properties().group(CompactStorage.TAB));
+		i.setRegistryName(BARREL.getRegistryName());
 		e.getRegistry().register(i);
 
-		i = new BlockItem(CompactRegistry.FLUID_BARREL, new Item.Properties().group(CompactStorage.TAB));
-		i.setRegistryName(CompactRegistry.FLUID_BARREL.getRegistryName());
+		i = new BlockItem(FLUID_BARREL, new Item.Properties().group(CompactStorage.TAB));
+		i.setRegistryName(FLUID_BARREL.getRegistryName());
 		e.getRegistry().register(i);
 	}
 

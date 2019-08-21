@@ -6,16 +6,22 @@ import java.io.File;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.tattyseal.compactstorage.block.BlockBarrel;
+import com.tattyseal.compactstorage.block.BlockChest;
 import com.tattyseal.compactstorage.creativetabs.CreativeTabCompactStorage;
 import com.tattyseal.compactstorage.packet.MessageCraftChest;
 import com.tattyseal.compactstorage.packet.MessageUpdateBuilder;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -45,6 +51,7 @@ public class CompactStorage {
 
 	public CompactStorage() {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+		MinecraftForge.EVENT_BUS.addListener(this::onPlayerInteract);
 	}
 
 	@SubscribeEvent
@@ -56,6 +63,15 @@ public class CompactStorage {
 		HELPER.addShaped(CompactRegistry.BARREL, 3, 3, Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT, Blocks.IRON_BLOCK, Blocks.CHEST, Blocks.IRON_BLOCK, Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT);
 		//HELPER.addShaped(CompactRegistry.FLUID_BARREL, 3, 3, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT);
 		ConfigurationHandler.init();
+	}
+
+	@SubscribeEvent
+	public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
+		Block block = event.getEntity().world.getBlockState(event.getPos()).getBlock();
+
+		if (block instanceof BlockChest || block instanceof BlockBarrel) {
+			event.setUseBlock(Result.ALLOW);
+		}
 	}
 
 	public static int getColorFromHue(int hue) {

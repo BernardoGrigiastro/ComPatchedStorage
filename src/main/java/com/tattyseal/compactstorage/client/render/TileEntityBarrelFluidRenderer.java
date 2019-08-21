@@ -20,7 +20,7 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 
 	@Override
 	public void render(TileEntityBarrelFluid te, double x, double y, double z, float partialTicks, int destroyStage) {
-		super.render(te, x, y, z, partialTicks, destroyStage);
+		if (te == null) return;
 
 		FluidStack stack = te.tank.getFluid();
 

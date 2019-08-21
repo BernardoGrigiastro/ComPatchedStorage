@@ -1,0 +1,16 @@
+{
+    "block.compactstorage.chest": "Compact Chest",
+    "block.compactstorage.chest_builder": "Chest Builder",
+
+    "block.compactstorage.barrel": "Barrel",
+    "block.compactstorage.fluid_barrel": "Drum",
+
+    "item.compactstorage.backpack": "Backpack",
+
+    "itemGroup.compactStorage": "CompactStorage",
+
+    "text.columns": "Columns",
+    "text.rows": "Rows",
+
+    "backpack.inv": "Backpack"
+}

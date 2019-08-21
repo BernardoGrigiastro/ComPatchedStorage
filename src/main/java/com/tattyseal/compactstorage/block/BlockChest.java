@@ -57,7 +57,7 @@ public class BlockChest extends Block {
 			if (te instanceof TileEntityChest) {
 				TileEntityChest chest = (TileEntityChest) te;
 				if (!player.isSneaking()) {
-					NetworkHooks.openGui((ServerPlayerEntity) player, chest, buf -> ContainerChest.writeChest(buf, chest));
+					NetworkHooks.openGui((ServerPlayerEntity) player, chest, buf -> ContainerChest.writeChest(buf, chest).writeBlockPos(pos));
 					return true;
 				} else {
 					ItemStack held = player.getHeldItem(hand);
@@ -92,24 +92,26 @@ public class BlockChest extends Block {
 	@Override
 	@Deprecated
 	public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
-		TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
+		if (newState.getBlock() != this) {
+			TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
 
-		if (!world.isRemote && chest != null) {
-			ItemStack stack = new ItemStack(CompactRegistry.CHEST);
+			if (!world.isRemote && chest != null) {
+				ItemStack stack = new ItemStack(CompactRegistry.CHEST);
 
-			if (chest.isRetaining()) {
-				chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
-			} else {
-				for (int slot = 0; slot < chest.getItems().getSlots(); slot++) {
-					Block.spawnAsEntity(world, pos, chest.getItems().getStackInSlot(slot));
+				if (chest.isRetaining()) {
+					chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
+				} else {
+					for (int slot = 0; slot < chest.getItems().getSlots(); slot++) {
+						Block.spawnAsEntity(world, pos, chest.getItems().getStackInSlot(slot));
+					}
+					chest.write(stack.getOrCreateChildTag("BlockEntityTag")).remove("items");
 				}
-				chest.write(stack.getOrCreateChildTag("BlockEntityTag")).remove("items");
+
+				world.addEntity(new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack));
 			}
 
-			world.addEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), stack));
+			super.onReplaced(state, world, pos, newState, isMoving);
 		}
-
-		super.onReplaced(state, world, pos, newState, isMoving);
 	}
 
 	@Override

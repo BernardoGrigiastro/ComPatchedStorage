@@ -1,7 +1,5 @@
 package com.tattyseal.compactstorage.client.render;
 
-import java.awt.Color;
-
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
 
@@ -23,6 +21,7 @@ public class TileEntityChestRenderer extends TileEntityRenderer<TileEntityChest>
 
 	@Override
 	public void render(TileEntityChest tile, double x, double y, double z, float partialTicks, int destroyStage) {
+		if (tile == null) return;
 		GlStateManager.pushMatrix();
 
 		GlStateManager.translatef((float) x, (float) y + 1.0F, (float) z + 1.0F);
@@ -50,13 +49,7 @@ public class TileEntityChestRenderer extends TileEntityRenderer<TileEntityChest>
 
 		Minecraft.getInstance().getTextureManager().bindTexture(texture);
 
-		int color;
-
-		try {
-			color = tile.getColor().brighter().getRGB();
-		} catch (Exception exception) {
-			color = Color.white.getRGB();
-		}
+		int color = tile.getColor().brighter().getRGB();
 
 		float r = (color >> 16 & 255) / 255.0F;
 		float g = (color >> 8 & 255) / 255.0F;

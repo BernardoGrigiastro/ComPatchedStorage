@@ -43,7 +43,7 @@ public class ItemBackpack extends Item {
 		if (!world.isRemote) {
 			int slot = hand == Hand.MAIN_HAND ? player.inventory.currentItem : 40;
 			InventoryBackpack inv = new InventoryBackpack(player.getHeldItem(hand), slot);
-			NetworkHooks.openGui((ServerPlayerEntity) player, inv, buf -> ContainerChest.writeChest(buf, inv));
+			NetworkHooks.openGui((ServerPlayerEntity) player, inv, buf -> ContainerChest.writeChest(buf, inv).writeBlockPos(player.getPosition()));
 			world.playSound(null, player.posX, player.posY + 1, player.posZ, SoundEvents.BLOCK_WOOL_FALL, SoundCategory.BLOCKS, 0.5F, world.rand.nextFloat() * 0.1F + 0.9F);
 		}
 		return new ActionResult<ItemStack>(ActionResultType.SUCCESS, player.getHeldItem(hand));

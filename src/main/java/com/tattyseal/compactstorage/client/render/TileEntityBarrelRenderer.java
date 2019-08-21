@@ -17,8 +17,7 @@ public class TileEntityBarrelRenderer extends TileEntityRenderer<TileEntityBarre
 
 	@Override
 	public void render(TileEntityBarrel te, double x, double y, double z, float partialTicks, int destroyStage) {
-		super.render(te, x, y, z, partialTicks, destroyStage);
-
+		if (te == null) return;
 		renderText(te, x, y, z, 0.01f);
 		renderItem(te, x, y, z, 1f, 0.5f);
 	}

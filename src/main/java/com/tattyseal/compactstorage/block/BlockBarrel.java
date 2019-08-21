@@ -89,20 +89,20 @@ public class BlockBarrel extends HorizontalBlock {
 	@Override
 	@Deprecated
 	public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
-		TileEntityBarrel barrel = (TileEntityBarrel) world.getTileEntity(pos);
-
-		if (!world.isRemote && barrel != null) {
-			int count = barrel.getCount();
-			ItemStack bStack = barrel.getBarrelStack();
-			while (count > 0) {
-				ItemStack s = bStack.copy();
-				s.setCount(Math.min(s.getMaxStackSize(), count));
-				count -= s.getCount();
-				Block.spawnAsEntity(world, pos, s);
+		if (newState.getBlock() != this) {
+			TileEntityBarrel barrel = (TileEntityBarrel) world.getTileEntity(pos);
+			if (!world.isRemote && barrel != null) {
+				int count = barrel.getCount();
+				ItemStack bStack = barrel.getBarrelStack();
+				while (count > 0) {
+					ItemStack s = bStack.copy();
+					s.setCount(Math.min(s.getMaxStackSize(), count));
+					count -= s.getCount();
+					Block.spawnAsEntity(world, pos, s);
+				}
 			}
+			super.onReplaced(state, world, pos, newState, isMoving);
 		}
-
-		super.onReplaced(state, world, pos, newState, isMoving);
 	}
 
 	@Override

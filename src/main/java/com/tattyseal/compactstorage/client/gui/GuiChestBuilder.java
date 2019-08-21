@@ -22,12 +22,12 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
 import net.minecraftforge.fml.client.config.GuiSlider;
+import net.minecraftforge.fml.client.config.GuiUtils;
 
 public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 
@@ -60,35 +60,32 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 		super.init();
 
 		buttonSubmit = new GuiButtonExt(guiLeft + 5, guiTop + 8 + 108 - 14, xSize - 31, 20, "Build", button -> CompactStorage.CHANNEL.sendToServer(new MessageCraftChest(pos, builder.getInfo())));
-		buttons.add(buttonSubmit);
+		addButton(buttonSubmit);
 
 		int offsetY = 18;
 
-		columnSlider = new GuiSlider(guiLeft + 5, guiTop + offsetY + 22, 150, 20, "Columns", "", 1f, 24f, 9, true, true, b -> {
+		columnSlider = new GuiSlider(guiLeft + 5, guiTop + offsetY + 22, 150, 20, "", " Columns", 1, 24, builder.getInfo().getSizeX(), false, true, b -> {
 		}, s -> {
-			builder.getInfo().setSizeX((int) MathHelper.clamp(s.sliderValue, 1, 24));
-			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(pos, builder.getInfo()));
+			builder.getInfo().setSizeX(s.getValueInt());
+			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(builder.getInfo()));
 		});
 		columnSlider.setWidth((xSize / 2) - 7);
-		columnSlider.sliderValue = builder.getInfo().getSizeX();
-		buttons.add(columnSlider);
+		addButton(columnSlider);
 
-		rowSlider = new GuiSlider(guiLeft + ((xSize / 2)) + 3, guiTop + offsetY + 22, 150, 20, "Rows", "", 1f, 12f, 3, true, true, b -> {
+		rowSlider = new GuiSlider(guiLeft + ((xSize / 2)) + 3, guiTop + offsetY + 22, 150, 20, "", " Rows", 1f, 12f, builder.getInfo().getSizeY(), false, true, b -> {
 		}, s -> {
-			builder.getInfo().setSizeY((int) MathHelper.clamp(s.sliderValue, 1, 12));
-			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(pos, builder.getInfo()));
+			builder.getInfo().setSizeY(s.getValueInt());
+			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(builder.getInfo()));
 		});
 		rowSlider.setWidth((xSize / 2) - 7);
-		rowSlider.sliderValue = builder.getInfo().getSizeY();
-		buttons.add(rowSlider);
+		addButton(rowSlider);
 
-		hueSlider = new GuiSliderHue(guiLeft + 5, guiTop + offsetY, "Hue", -1f, 360f, 180, s -> {
-			builder.getInfo().setHue((int) MathHelper.clamp(s.sliderValue, -1, 360));
-			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(pos, builder.getInfo()));
+		hueSlider = new GuiSliderHue(guiLeft + 5, guiTop + offsetY, "Hue ", -1f, 360f, builder.getInfo().getHue(), s -> {
+			builder.getInfo().setHue(s.getValueInt());
+			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(builder.getInfo()));
 		});
 		hueSlider.setWidth(xSize - 10);
-		hueSlider.sliderValue = builder.getInfo().getHue();
-		buttons.add(hueSlider);
+		addButton(hueSlider);
 	}
 
 	@Override
@@ -107,11 +104,19 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 			if (x >= startX && x <= endX) {
 				if (y >= startY && y <= endY) {
 					StorageInfo info = new StorageInfo(builder.getInfo().getSizeX(), builder.getInfo().getSizeY(), builder.getInfo().getHue(), type);
-					CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(pos, info));
+					CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(info));
 				}
 			}
 		}
 		return super.mouseClicked(x, y, button);
+	}
+
+	@Override
+	public boolean mouseReleased(double p_mouseReleased_1_, double p_mouseReleased_3_, int p_mouseReleased_5_) {
+		hueSlider.mouseReleased(p_mouseReleased_1_, p_mouseReleased_3_, p_mouseReleased_5_);
+		columnSlider.mouseReleased(p_mouseReleased_1_, p_mouseReleased_3_, p_mouseReleased_5_);
+		rowSlider.mouseReleased(p_mouseReleased_1_, p_mouseReleased_3_, p_mouseReleased_5_);
+		return super.mouseReleased(p_mouseReleased_1_, p_mouseReleased_3_, p_mouseReleased_5_);
 	}
 
 	@Override
@@ -137,7 +142,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 							ArrayList<String> toolList = new ArrayList<>();
 							toolList.add(stack.getDisplayName().getFormattedText());
 							toolList.add(TextFormatting.AQUA + "Amount Required: " + stack.getCount());
-							toolList.forEach(s -> font.drawString(s, mouseX, mouseY, 0));
+							GuiUtils.drawHoveringText(toolList, mouseX, mouseY, width, height, -1, font);
 							hoverTooltip = true;
 							break;
 						}
@@ -162,7 +167,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 							ArrayList<String> toolList = new ArrayList<String>();
 							toolList.add(type.name);
 
-							toolList.forEach(s -> font.drawString(s, mouseX, mouseY, 0));
+							GuiUtils.drawHoveringText(toolList, mouseX, mouseY, width, height, -1, font);
 							hoverTooltip = true;
 							break;
 						}
@@ -227,7 +232,6 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 
 			RenderHelper.enableGUIStandardItemLighting();
 			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, slotX + 1 + (x * 18), slotY + 1);
-
 			RenderHelper.disableStandardItemLighting();
 		}
 		font.drawString(I18n.format("tile.chestBuilder.name"), guiLeft + 7, guiTop + 7, 0x404040);
@@ -239,14 +243,14 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 	 * index.
 	 */
 	private void drawTab(StorageInfo.Type type, ItemStack stack) {
-		boolean flag = type.ordinal() == builder.getInfo().getType().ordinal();
+		boolean active = type.ordinal() == builder.getInfo().getType().ordinal();
 		int i = type.ordinal();
 		int j = i * 28;
 		int k = 0;
 		int l = this.guiLeft + 26 * i;
 		int i1 = this.guiTop;
 
-		if (flag) {
+		if (active) {
 			k += 32;
 		}
 
@@ -267,11 +271,11 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 		this.itemRenderer.zLevel = 100.0F;
 		l = l + 6;
 		i1 = i1 + 8;
-		GlStateManager.enableLighting();
+		RenderHelper.enableGUIStandardItemLighting();
 		GlStateManager.enableRescaleNormal();
 		this.itemRenderer.renderItemAndEffectIntoGUI(stack, l, i1);
 		this.itemRenderer.renderItemOverlays(this.font, stack, l, i1);
-		GlStateManager.disableLighting();
+		RenderHelper.disableStandardItemLighting();
 		this.itemRenderer.zLevel = 0.0F;
 		this.blitOffset = 0;
 	}

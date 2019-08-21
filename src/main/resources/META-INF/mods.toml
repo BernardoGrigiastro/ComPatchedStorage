@@ -10,7 +10,7 @@ modId="compactstorage" #mandatory
 
 version="${file.jarVersion}" #mandatory
 
-displayName="Compact Storage" #mandatory
+displayName="ComPatchedStorage" #mandatory
 
 description='''
 Holding many things in a tiny space.
