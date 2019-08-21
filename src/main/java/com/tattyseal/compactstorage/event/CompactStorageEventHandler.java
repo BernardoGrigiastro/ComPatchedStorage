@@ -5,10 +5,11 @@ import com.tattyseal.compactstorage.block.BlockChest;
 
 import net.minecraft.block.Block;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.Event.Result;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class CompactStorageEventHandler {
+
 	@SubscribeEvent
 	public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
 		Block block = event.getEntity().world.getBlockState(event.getPos()).getBlock();

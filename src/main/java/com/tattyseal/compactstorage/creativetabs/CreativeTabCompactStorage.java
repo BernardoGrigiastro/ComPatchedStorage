@@ -5,13 +5,10 @@ import javax.annotation.Nonnull;
 import com.tattyseal.compactstorage.CompactRegistry;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
 
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 
-/**
- * Created by Toby on 07/11/2014.
- */
-public class CreativeTabCompactStorage extends CreativeTabs {
+public class CreativeTabCompactStorage extends ItemGroup {
 
 	public CreativeTabCompactStorage() {
 		super("compactStorage");
@@ -21,7 +18,7 @@ public class CreativeTabCompactStorage extends CreativeTabs {
 	@Nonnull
 	public ItemStack createIcon() {
 		ItemStack stack = new ItemStack(CompactRegistry.CHEST);
-		new TileEntityChest().writeToNBT(stack.getOrCreateSubCompound("BlockEntityTag"));
+		new TileEntityChest().write(stack.getOrCreateChildTag("BlockEntityTag"));
 		return stack;
 	}
 }

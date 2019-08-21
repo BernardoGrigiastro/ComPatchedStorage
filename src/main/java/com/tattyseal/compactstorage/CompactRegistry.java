@@ -6,7 +6,7 @@ import com.tattyseal.compactstorage.block.BlockChestBuilder;
 import com.tattyseal.compactstorage.block.BlockFluidBarrel;
 import com.tattyseal.compactstorage.item.ItemBackpack;
 
-import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
+import net.minecraftforge.registries.ObjectHolder;
 
 @ObjectHolder(CompactStorage.MODID)
 public class CompactRegistry {

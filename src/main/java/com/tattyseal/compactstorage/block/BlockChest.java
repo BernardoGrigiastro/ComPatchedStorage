@@ -17,7 +17,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.Hand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
@@ -56,7 +55,7 @@ public class BlockChest extends Block {
 
 				return true;
 			} else {
-				ItemStack held = player.getHeldItem(EnumHand.MAIN_HAND);
+				ItemStack held = player.getHeldItem(Hand.MAIN_HAND);
 				TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
 				if (chest != null && !chest.isRetaining() && !held.isEmpty() && held.getItem() == Items.DIAMOND) {
 					chest.setRetaining(true);

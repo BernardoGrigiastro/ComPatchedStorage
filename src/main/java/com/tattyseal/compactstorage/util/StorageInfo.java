@@ -17,7 +17,7 @@ import java.util.List;
 import com.tattyseal.compactstorage.CompactRegistry;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class StorageInfo {
 	private int sizeX;
@@ -64,13 +64,13 @@ public class StorageInfo {
 		this.type = type;
 	}
 
-	public NBTTagCompound serialize() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setIntArray("data", new int[] { sizeX, sizeY, hue, type.ordinal() });
+	public CompoundNBT serialize() {
+		CompoundNBT tag = new CompoundNBT();
+		tag.putIntArray("data", new int[] { sizeX, sizeY, hue, type.ordinal() });
 		return tag;
 	}
 
-	public void deserialize(NBTTagCompound tag) {
+	public void deserialize(CompoundNBT tag) {
 		int[] data = tag.getIntArray("data");
 		if (data.length == 4) {
 			sizeX = data[0];

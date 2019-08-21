@@ -1,7 +1,7 @@
 package com.tattyseal.compactstorage.util;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -15,10 +15,10 @@ public class RenderUtil {
 	private static double slotTextureHeight = 216d;
 	private static double chestTextureSize = 15d;
 
-	private static final Minecraft mc = Minecraft.getMinecraft();
+	private static final Minecraft mc = Minecraft.getInstance();
 
 	public static void renderSlots(int x, int y, int width, int height) {
-		mc.renderEngine.bindTexture(slotTexture);
+		mc.getTextureManager().bindTexture(slotTexture);
 
 		int realWidth = (width * 18);
 		int realHeight = (height * 18);
@@ -37,12 +37,12 @@ public class RenderUtil {
 		tessellator.draw();
 	}
 
-	public static void renderChestBackground(GuiContainer gui, int x, int y, int width, int height) {
+	public static void renderChestBackground(ContainerScreen<?> gui, int x, int y, int width, int height) {
 		renderBackground(gui, x, y, Math.max(9, width) * 18, height * 18);
 	}
 
-	public static void renderBackground(GuiContainer gui, int x, int y, int width, int height) {
-		mc.renderEngine.bindTexture(backgroundTexture);
+	public static void renderBackground(ContainerScreen<?> gui, int x, int y, int width, int height) {
+		mc.getTextureManager().bindTexture(backgroundTexture);
 
 		int realWidth = 7 + (width) + 7;
 		int realHeight = 15 + (height) + 13 + 54 + 4 + 18 + 7;

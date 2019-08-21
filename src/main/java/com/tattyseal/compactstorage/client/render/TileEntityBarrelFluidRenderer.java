@@ -2,6 +2,7 @@ package com.tattyseal.compactstorage.client.render;
 
 import org.lwjgl.opengl.GL11;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.tattyseal.compactstorage.tileentity.TileEntityBarrelFluid;
 
 import net.minecraft.client.Minecraft;
@@ -9,33 +10,33 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
 
-public class TileEntityBarrelFluidRenderer extends TileEntitySpecialRenderer<TileEntityBarrelFluid> {
+public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntityBarrelFluid> {
 	public static final ResourceLocation blockSheet = new ResourceLocation("textures/atlas/blocks.png");
 
 	@Override
-	public void render(TileEntityBarrelFluid te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-		super.render(te, x, y, z, partialTicks, destroyStage, alpha);
+	public void render(TileEntityBarrelFluid te, double x, double y, double z, float partialTicks, int destroyStage) {
+		super.render(te, x, y, z, partialTicks, destroyStage);
 
 		FluidStack stack = te.tank.getFluid();
 
 		if (stack != null) {
-			TextureAtlasSprite tex = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(stack.getFluid().getStill().toString());
+			TextureAtlasSprite tex = Minecraft.getInstance().getTextureMap().getAtlasSprite(stack.getFluid().getStill().toString());
 
 			Tessellator tessellator = Tessellator.getInstance();
 			BufferBuilder builder = tessellator.getBuffer();
 
 			bindTexture(blockSheet);
 
-			GL11.glPushMatrix();
+			GlStateManager.pushMatrix();
 
-			GL11.glTranslated(x, y, z);
+			GlStateManager.translated(x, y, z);
 
-			GL11.glDisable(GL11.GL_LIGHTING);
+			GlStateManager.disableLighting();
 
 			float increments = (1f / 16f);
 
@@ -81,7 +82,7 @@ public class TileEntityBarrelFluidRenderer extends TileEntitySpecialRenderer<Til
 
 			tessellator.draw();
 
-			GL11.glPopMatrix();
+			GlStateManager.popMatrix();
 
 			float scale = 0.01f;
 
@@ -89,19 +90,19 @@ public class TileEntityBarrelFluidRenderer extends TileEntitySpecialRenderer<Til
 			 * Draw the text
 			 */
 
-			GL11.glPushMatrix();
-			GL11.glTranslatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
+			GlStateManager.pushMatrix();
+			GlStateManager.translatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
 
-			float angle = Minecraft.getMinecraft().player.rotationYaw; //- (float) Math.toDegrees(Math.atan2(Minecraft.getMinecraft().player.posX - te.getPos().getX(), Minecraft.getMinecraft().player.posZ - te.getPos().getZ()));
+			float angle = Minecraft.getInstance().player.rotationYaw; //- (float) Math.toDegrees(Math.atan2(Minecraft.getMinecraft().player.posX - te.getPos().getX(), Minecraft.getMinecraft().player.posZ - te.getPos().getZ()));
 			//LogHelper.dump("Angle:" + angle);
 
-			GL11.glTranslatef(0f, 0.5001f, 0f);
-			GL11.glRotatef(180f, 0, 1f, 0f);
-			GL11.glRotatef(90f, 1, 0, 0);
+			GlStateManager.translatef(0f, 0.5001f, 0f);
+			GlStateManager.rotatef(180f, 0, 1f, 0f);
+			GlStateManager.rotatef(90f, 1, 0, 0);
 
-			GL11.glRotatef(angle, 0, 0, 1f);
+			GlStateManager.rotatef(angle, 0, 0, 1f);
 
-			GL11.glScalef(scale, scale, scale);
+			GlStateManager.scalef(scale, scale, scale);
 
 			FontRenderer fontrenderer = this.getFontRenderer();
 			byte b0 = 0;
@@ -110,7 +111,7 @@ public class TileEntityBarrelFluidRenderer extends TileEntitySpecialRenderer<Til
 
 			fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, -5, b0);
 
-			GL11.glPopMatrix();
+			GlStateManager.popMatrix();
 		}
 	}
 }
