@@ -4,36 +4,35 @@ import java.awt.Color;
 
 import javax.annotation.Nonnull;
 
-import com.tattyseal.compactstorage.api.IChest;
-import com.tattyseal.compactstorage.block.BlockChest;
+import com.tattyseal.compactstorage.CompactRegistry;
+import com.tattyseal.compactstorage.inventory.ContainerChest;
+import com.tattyseal.compactstorage.inventory.IChest;
 import com.tattyseal.compactstorage.inventory.InfoItemHandler;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.ContainerChest;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
+import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
-/**
- * Created by Toby on 06/11/2014.
- */
-public class TileEntityChest extends TileEntity implements IChest, ITickable {
+public class TileEntityChest extends TileEntity implements IChest, ITickableTileEntity, INamedContainerProvider {
 
-	private EnumFacing direction;
+	private Direction direction;
 	private Color color;
 	protected StorageInfo info;
 	protected boolean retaining;
@@ -44,13 +43,15 @@ public class TileEntityChest extends TileEntity implements IChest, ITickable {
 	private InfoItemHandler items;
 
 	public TileEntityChest() {
-		this.setDirection(EnumFacing.NORTH);
+		super(CompactRegistry.CHEST_TILE);
+		this.setDirection(Direction.NORTH);
 		this.info = new StorageInfo(9, 3, 180, StorageInfo.Type.CHEST);
 		this.items = new InfoItemHandler(info);
 	}
 
 	public TileEntityChest(StorageInfo info) {
-		this.setDirection(EnumFacing.NORTH);
+		this();
+		this.setDirection(Direction.NORTH);
 		this.info = info;
 		this.items = new InfoItemHandler(info);
 	}
@@ -66,74 +67,74 @@ public class TileEntityChest extends TileEntity implements IChest, ITickable {
 	}
 
 	@Override
-	public void onOpened(EntityPlayer player) {
+	public void onOpened(PlayerEntity player) {
 		if (!player.isSpectator()) {
 			if (this.numPlayersUsing < 0) {
 				this.numPlayersUsing = 0;
 			}
 
 			++this.numPlayersUsing;
-			this.world.addBlockEvent(this.pos, this.getBlockType(), 1, this.numPlayersUsing);
-			this.world.notifyNeighborsOfStateChange(this.pos, this.getBlockType(), false);
+			this.world.addBlockEvent(this.pos, CompactRegistry.CHEST, 1, this.numPlayersUsing);
+			this.world.notifyNeighborsOfStateChange(this.pos, CompactRegistry.CHEST);
 		}
 	}
 
 	@Override
-	public void onClosed(EntityPlayer player) {
-		if (!player.isSpectator() && this.getBlockType() instanceof BlockChest) {
+	public void onClosed(PlayerEntity player) {
+		if (!player.isSpectator()) {
 			--this.numPlayersUsing;
-			this.world.addBlockEvent(this.pos, this.getBlockType(), 1, this.numPlayersUsing);
-			this.world.notifyNeighborsOfStateChange(this.pos, this.getBlockType(), false);
+			this.world.addBlockEvent(this.pos, CompactRegistry.CHEST, 1, this.numPlayersUsing);
+			this.world.notifyNeighborsOfStateChange(this.pos, CompactRegistry.CHEST);
 		}
 	}
 
 	@Override
 	@Nonnull
-	public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-		super.writeToNBT(tag);
-		tag.setInteger("facing", getDirection().ordinal());
-		tag.setTag("info", info.serialize());
-		tag.setBoolean("retaining", retaining);
-		tag.setTag("items", getItems().serializeNBT());
+	public CompoundNBT write(CompoundNBT tag) {
+		super.write(tag);
+		tag.putInt("facing", getDirection().ordinal());
+		tag.put("info", info.serialize());
+		tag.putBoolean("retaining", retaining);
+		tag.put("items", getItems().serializeNBT());
 		return tag;
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tag) {
-		super.readFromNBT(tag);
-		this.setDirection(EnumFacing.byIndex(tag.getInteger("facing")));
+	public void read(CompoundNBT tag) {
+		super.read(tag);
+		this.setDirection(Direction.byIndex(tag.getInt("facing")));
 		this.retaining = tag.getBoolean("retaining");
-		this.info.deserialize(tag.getCompoundTag("info"));
-		this.getItems().deserializeNBT(tag.getCompoundTag("items"));
+		this.info.deserialize(tag.getCompound("info"));
+		this.getItems().deserializeNBT(tag.getCompound("items"));
 		this.setColor(getHue() == -1 ? Color.white : Color.getHSBColor(info.getHue() / 360f, 0.5f, 0.5f));
 	}
 
 	@Override
 	@Nonnull
-	public NBTTagCompound getUpdateTag() {
-		NBTTagCompound tag = super.getUpdateTag();
-		tag.setInteger("facing", getDirection().ordinal());
-		tag.setTag("info", info.serialize());
-		tag.setBoolean("retaining", retaining);
+	public CompoundNBT getUpdateTag() {
+		CompoundNBT tag = super.getUpdateTag();
+		tag.putInt("facing", getDirection().ordinal());
+		tag.put("info", info.serialize());
+		tag.putBoolean("retaining", retaining);
 		return tag;
 	}
 
 	@Override
-	public void handleUpdateTag(NBTTagCompound tag) {
-		this.setDirection(EnumFacing.byIndex(tag.getInteger("facing")));
+	public void handleUpdateTag(CompoundNBT tag) {
+		this.setDirection(Direction.byIndex(tag.getInt("facing")));
 		this.retaining = tag.getBoolean("retaining");
-		this.info.deserialize(tag.getCompoundTag("info"));
+		this.info.deserialize(tag.getCompound("info"));
 		this.getItems().setSize(info.getSizeX() * info.getSizeY());
 		this.setColor(getHue() == -1 ? Color.white : Color.getHSBColor(info.getHue() / 360f, 0.5f, 0.5f));
 	}
 
 	@Override
-	public SPacketUpdateTileEntity getUpdatePacket() {
-		return new SPacketUpdateTileEntity(pos, 0, getUpdateTag());
+	public SUpdateTileEntityPacket getUpdatePacket() {
+		return new SUpdateTileEntityPacket(pos, -1, getUpdateTag());
 	}
 
 	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
 		handleUpdateTag(pkt.getNbtCompound());
 	}
 
@@ -142,7 +143,7 @@ public class TileEntityChest extends TileEntity implements IChest, ITickable {
 	}
 
 	@Override
-	public void update() {
+	public void tick() {
 		int i = this.pos.getX();
 		int j = this.pos.getY();
 		int k = this.pos.getZ();
@@ -151,9 +152,9 @@ public class TileEntityChest extends TileEntity implements IChest, ITickable {
 		if (!this.world.isRemote && this.numPlayersUsing != 0 && (this.ticksSinceSync + i + j + k) % 200 == 0) {
 			this.numPlayersUsing = 0;
 
-			for (EntityPlayer entityplayer : this.world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(i - 5.0F, j - 5.0F, k - 5.0F, i + 1 + 5.0F, j + 1 + 5.0F, k + 1 + 5.0F))) {
-				if (entityplayer.openContainer instanceof ContainerChest) {
-					IInventory iinventory = ((ContainerChest) entityplayer.openContainer).getLowerChestInventory();
+			for (PlayerEntity player : this.world.getEntitiesWithinAABB(PlayerEntity.class, new AxisAlignedBB(i - 5.0F, j - 5.0F, k - 5.0F, i + 1 + 5.0F, j + 1 + 5.0F, k + 1 + 5.0F))) {
+				if (player.openContainer instanceof ContainerChest) {
+					IChest iinventory = ((ContainerChest) player.openContainer).chest;
 					if (iinventory == this) ++this.numPlayersUsing;
 				}
 			}
@@ -219,20 +220,12 @@ public class TileEntityChest extends TileEntity implements IChest, ITickable {
 		info.setHue(hue);
 	}
 
-	@Override
-	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-		return oldState.getBlock() != newSate.getBlock();
-	}
+	LazyOptional<IItemHandler> itemOpt = LazyOptional.of(() -> items);
 
 	@Override
-	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
-	}
-
-	@Override
-	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-		if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(items);
-		return super.getCapability(capability, facing);
+	public <T> LazyOptional<T> getCapability(Capability<T> cap) {
+		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return itemOpt.cast();
+		return super.getCapability(cap);
 	}
 
 	public Color getColor() {
@@ -256,11 +249,11 @@ public class TileEntityChest extends TileEntity implements IChest, ITickable {
 		this.retaining = retain;
 	}
 
-	public EnumFacing getDirection() {
+	public Direction getDirection() {
 		return direction;
 	}
 
-	public void setDirection(EnumFacing direction) {
+	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
 
@@ -278,5 +271,15 @@ public class TileEntityChest extends TileEntity implements IChest, ITickable {
 
 	public void setPrevLidAngle(float prevLidAngle) {
 		this.prevLidAngle = prevLidAngle;
+	}
+
+	@Override
+	public Container createMenu(int id, PlayerInventory inv, PlayerEntity player) {
+		return new ContainerChest(id, world, this, player, pos);
+	}
+
+	@Override
+	public ITextComponent getDisplayName() {
+		return CompactRegistry.CHEST.getNameTextComponent();
 	}
 }

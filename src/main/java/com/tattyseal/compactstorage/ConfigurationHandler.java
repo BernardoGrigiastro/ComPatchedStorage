@@ -10,9 +10,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 import shadows.placebo.config.Configuration;
 
-/**
- * Created by Toby on 07/11/2014.
- */
 public class ConfigurationHandler {
 
 	public static Configuration configuration;

@@ -1,66 +1,71 @@
 package com.tattyseal.compactstorage.packet;
 
+import java.util.function.Supplier;
+
+import com.tattyseal.compactstorage.inventory.ContainerChestBuilder;
 import com.tattyseal.compactstorage.tileentity.TileEntityChestBuilder;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
-import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.network.NetworkEvent.Context;
+import shadows.placebo.util.NetworkUtils;
+import shadows.placebo.util.NetworkUtils.MessageProvider;
 
-public class MessageUpdateBuilder implements IMessage {
+public class MessageUpdateBuilder extends MessageProvider<MessageUpdateBuilder> {
+
 	protected int x;
 	protected int y;
 	protected int z;
 	protected StorageInfo info;
 
-	public MessageUpdateBuilder() {
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
-		this.info = new StorageInfo(0, 0, 180, StorageInfo.Type.CHEST);
-	}
-
-	public MessageUpdateBuilder(BlockPos pos, StorageInfo info) {
-		this.x = pos.getX();
-		this.y = pos.getY();
-		this.z = pos.getZ();
+	public MessageUpdateBuilder(int x, int y, int z, StorageInfo info) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
 		this.info = info;
 	}
 
+	public MessageUpdateBuilder(BlockPos pos, StorageInfo info) {
+		this(pos.getX(), pos.getY(), pos.getZ(), info);
+	}
+
+	public MessageUpdateBuilder() {
+	}
+
 	@Override
-	public void fromBytes(ByteBuf buf) {
+	public Class<MessageUpdateBuilder> getMsgClass() {
+		return MessageUpdateBuilder.class;
+	}
+
+	@Override
+	public MessageUpdateBuilder read(PacketBuffer buf) {
 		x = buf.readInt();
 		y = buf.readInt();
 		z = buf.readInt();
 		info = new StorageInfo(buf.readInt(), buf.readInt(), buf.readInt(), StorageInfo.Type.values()[buf.readInt()]);
+		return new MessageUpdateBuilder(x, y, z, info);
 	}
 
 	@Override
-	public void toBytes(ByteBuf buf) {
-		buf.writeInt(x);
-		buf.writeInt(y);
-		buf.writeInt(z);
-		buf.writeInt(info.getSizeX());
-		buf.writeInt(info.getSizeY());
-		buf.writeInt(info.getHue());
-		buf.writeInt(info.getType().ordinal());
+	public void write(MessageUpdateBuilder msg, PacketBuffer buf) {
+		buf.writeInt(msg.x);
+		buf.writeInt(msg.y);
+		buf.writeInt(msg.z);
+		buf.writeInt(msg.info.getSizeX());
+		buf.writeInt(msg.info.getSizeY());
+		buf.writeInt(msg.info.getHue());
+		buf.writeInt(msg.info.getType().ordinal());
 	}
 
-	public static IMessage onMessage(final MessageUpdateBuilder message, MessageContext ctx) {
-		if (ctx.side.equals(Side.SERVER)) {
-			final WorldServer world = ctx.getServerHandler().player.getServerWorld();
-
-			world.addScheduledTask(new Runnable() {
-				@Override
-				public void run() {
-					TileEntityChestBuilder builder = (TileEntityChestBuilder) world.getTileEntity(new BlockPos(message.x, message.y, message.z));
-					if (builder != null) builder.getInfo().deserialize(message.info.serialize());
-				}
-			});
-		}
-		return null;
+	@Override
+	public void handle(MessageUpdateBuilder msg, Supplier<Context> ctx) {
+		NetworkUtils.handlePacket(() -> () -> {
+			ServerPlayerEntity player = ctx.get().getSender();
+			TileEntityChestBuilder builder = null;
+			if (player.openContainer instanceof ContainerChestBuilder) builder = ((ContainerChestBuilder) player.openContainer).builder;
+			if (builder != null) builder.getInfo().deserialize(msg.info.serialize());
+		}, ctx.get());
 	}
 }

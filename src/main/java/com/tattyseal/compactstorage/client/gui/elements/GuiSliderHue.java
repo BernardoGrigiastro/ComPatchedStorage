@@ -2,30 +2,28 @@ package com.tattyseal.compactstorage.client.gui.elements;
 
 import java.awt.Color;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiPageButtonList;
-import net.minecraft.client.gui.GuiSlider;
-import net.minecraft.client.renderer.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager;
 
-/**
- * Created by tobystrong on 02/05/2017.
- */
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.fml.client.config.GuiSlider;
+
 public class GuiSliderHue extends GuiSlider {
-	public GuiSliderHue(GuiPageButtonList.GuiResponder guiResponder, int idIn, int x, int y, String nameIn, float minIn, float maxIn, float defaultValue, FormatHelper formatter) {
-		super(guiResponder, idIn, x, y, nameIn, minIn, maxIn, defaultValue, formatter);
+
+	public GuiSliderHue(int x, int y, String nameIn, float minIn, float maxIn, float defaultValue, ISlider slider) {
+		super(x, y, 150, 20, nameIn, "", minIn, maxIn, defaultValue, false, true, b -> {
+		}, slider);
 	}
 
 	@Override
-	protected void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
-		super.mouseDragged(mc, mouseX, mouseY);
-
+	protected void renderBg(Minecraft par1Minecraft, int par2, int par3) {
+		super.renderBg(par1Minecraft, par2, par3);
 		if (this.visible) {
-			Color color = getSliderPosition() == 0f ? Color.white : Color.getHSBColor(getSliderPosition(), 1f, 1f);
+			Color color = this.sliderValue == 0f ? Color.white : Color.getHSBColor((float) sliderValue, 1f, 1f);
 
-			GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f);
+			GlStateManager.color3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f);
 
-			this.drawTexturedModalRect(this.x + (int) (this.getSliderPosition() * (this.width - 8)), this.y, 0, 66, 4, 20);
-			this.drawTexturedModalRect(this.x + (int) (this.getSliderPosition() * (this.width - 8)) + 4, this.y, 196, 66, 4, 20);
+			this.blit(this.x + (int) (this.sliderValue) * (this.width - 8), this.y, 0, 66, 4, 20);
+			this.blit(this.x + (int) (this.sliderValue * (this.width - 8)) + 4, this.y, 196, 66, 4, 20);
 		}
 	}
 }

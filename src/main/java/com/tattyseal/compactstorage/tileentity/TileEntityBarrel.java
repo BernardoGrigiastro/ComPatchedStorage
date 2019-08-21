@@ -2,6 +2,7 @@ package com.tattyseal.compactstorage.tileentity;
 
 import javax.annotation.Nullable;
 
+import com.tattyseal.compactstorage.CompactRegistry;
 import com.tattyseal.compactstorage.inventory.BarrelItemHandler;
 
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,7 +26,7 @@ public class TileEntityBarrel extends TileEntity implements IBarrel {
 	public int hue = 0;
 
 	public TileEntityBarrel() {
-		super(null);
+		super(CompactRegistry.BARREL_TILE);
 		hue = 128;
 	}
 

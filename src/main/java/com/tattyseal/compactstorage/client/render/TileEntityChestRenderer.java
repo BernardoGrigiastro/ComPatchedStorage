@@ -75,7 +75,6 @@ public class TileEntityChestRenderer extends TileEntityRenderer<TileEntityChest>
 
 		if (tile.isRetaining()) {
 			if (item == null) item = new ItemEntity(tile.getWorld(), 0D, 0D, 0D, stack);
-			item.hoverStart = 0.0F;
 			GlStateManager.rotatef(180, 0, 0, 1);
 			GlStateManager.translatef(-0.5f, -1.1f, 0.01f);
 			Minecraft.getInstance().getRenderManager().renderEntity(item, 0.0D, 0.0D, 0.0D, 0.0F, 0.0F, false);

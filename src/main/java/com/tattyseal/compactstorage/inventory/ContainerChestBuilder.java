@@ -2,51 +2,46 @@ package com.tattyseal.compactstorage.inventory;
 
 import javax.annotation.Nonnull;
 
+import com.tattyseal.compactstorage.CompactRegistry;
 import com.tattyseal.compactstorage.inventory.slot.SlotUnplaceable;
 import com.tattyseal.compactstorage.tileentity.TileEntityChestBuilder;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IContainerListener;
-import net.minecraft.inventory.Slot;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.IContainerListener;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.SlotItemHandler;
 
-/**
- * Created by Toby on 11/11/2014.
- */
 public class ContainerChestBuilder extends Container {
+
 	public World world;
-	public EntityPlayer player;
+	public PlayerEntity player;
 	public BlockPos pos;
+	public TileEntityChestBuilder builder;
+	public int xSize;
 
-	public TileEntityChestBuilder chest;
-
-	/***
-	 * This is carried over from the GUI for slot placement issues
-	 */
-	private int xSize;
-
-	public ContainerChestBuilder(World world, EntityPlayer player, BlockPos pos) {
-		super();
-
+	public ContainerChestBuilder(int id, World world, PlayerEntity player, TileEntityChestBuilder te) {
+		super(CompactRegistry.BUILDER_CONTAINER, id);
 		this.world = world;
 		this.player = player;
-		this.pos = pos;
-		this.chest = ((TileEntityChestBuilder) world.getTileEntity(pos));
-
+		this.pos = te.getPos();
+		this.builder = te;
 		this.xSize = 7 + 162 + 7;
-
 		setupSlots();
 	}
 
+	public ContainerChestBuilder(int id, PlayerInventory inv, PacketBuffer buf) {
+		this(id, inv.player.world, inv.player, (TileEntityChestBuilder) inv.player.world.getTileEntity(buf.readBlockPos()));
+	}
+
 	@Override
-	public boolean canInteractWith(@Nonnull EntityPlayer player) {
+	public boolean canInteractWith(@Nonnull PlayerEntity player) {
 		return true;
 	}
 
@@ -55,11 +50,11 @@ public class ContainerChestBuilder extends Container {
 		int slotX = ((xSize / 2) - 36);
 
 		for (int x = 0; x < 4; x++) {
-			addSlotToContainer(new SlotItemHandler(chest.getItems(), x, slotX + (x * 18) + 1, slotY + 21));
+			addSlot(new SlotItemHandler(builder.getItems(), x, slotX + (x * 18) + 1, slotY + 21));
 		}
 
-		SlotUnplaceable chestSlot = new SlotUnplaceable(chest.getItems(), 4, 5 + xSize - 29, 8 + 108 - 12);
-		addSlotToContainer(chestSlot);
+		SlotUnplaceable chestSlot = new SlotUnplaceable(builder.getItems(), 4, 5 + xSize - 29, 8 + 108 - 12);
+		addSlot(chestSlot);
 
 		slotX = (xSize / 2) - ((9 * 18) / 2) + 1;
 		slotY = 8 + 108 + 10;
@@ -67,7 +62,7 @@ public class ContainerChestBuilder extends Container {
 		for (int x = 0; x < 9; x++) {
 			for (int y = 0; y < 3; y++) {
 				Slot slot = new Slot(player.inventory, x + y * 9 + 9, slotX + (x * 18), slotY + (y * 18));
-				addSlotToContainer(slot);
+				addSlot(slot);
 			}
 		}
 
@@ -75,13 +70,13 @@ public class ContainerChestBuilder extends Container {
 
 		for (int x = 0; x < 9; x++) {
 			Slot slot = new Slot(player.inventory, x, slotX + (x * 18), slotY);
-			addSlotToContainer(slot);
+			addSlot(slot);
 		}
 	}
 
 	@Override
 	@Nonnull
-	public ItemStack transferStackInSlot(EntityPlayer player, int slotIndex) {
+	public ItemStack transferStackInSlot(PlayerEntity player, int slotIndex) {
 		try {
 			Slot slot = inventorySlots.get(slotIndex);
 
@@ -120,8 +115,8 @@ public class ContainerChestBuilder extends Container {
 		super.detectAndSendChanges();
 
 		for (IContainerListener player : this.listeners) {
-			if (chest != null) {
-				StorageInfo info = chest.getInfo();
+			if (builder != null) {
+				StorageInfo info = builder.getInfo();
 				player.sendWindowProperty(this, 0, info.getSizeX());
 				player.sendWindowProperty(this, 1, info.getSizeY());
 				player.sendWindowProperty(this, 2, info.getHue());
@@ -130,21 +125,20 @@ public class ContainerChestBuilder extends Container {
 		}
 	}
 
-	@SideOnly(Side.CLIENT)
 	@Override
 	public void updateProgressBar(int id, int value) {
 		switch (id) {
 		case 0:
-			chest.getInfo().setSizeX(value);
+			builder.getInfo().setSizeX(value);
 			break;
 		case 1:
-			chest.getInfo().setSizeY(value);
+			builder.getInfo().setSizeY(value);
 			break;
 		case 2:
-			chest.getInfo().setHue(value);
+			builder.getInfo().setHue(value);
 			break;
 		case 3:
-			chest.getInfo().setType(StorageInfo.Type.values()[value]);
+			builder.getInfo().setType(StorageInfo.Type.values()[value]);
 			break;
 		}
 	}

@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.tattyseal.compactstorage.CompactRegistry;
-import com.tattyseal.compactstorage.CompactStorage;
+import com.tattyseal.compactstorage.inventory.ContainerChest;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
 
 import net.minecraft.block.Block;
@@ -13,6 +13,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -27,12 +28,14 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.LootContext.Builder;
 import net.minecraftforge.common.ToolType;
+import net.minecraftforge.fml.network.NetworkHooks;
 
 public class BlockChest extends Block {
 
@@ -50,23 +53,24 @@ public class BlockChest extends Block {
 	@Override
 	public boolean onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 		if (!world.isRemote) {
-			if (!player.isSneaking()) {
-				player.openGui(CompactStorage.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-
-				return true;
-			} else {
-				ItemStack held = player.getHeldItem(Hand.MAIN_HAND);
-				TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
-				if (chest != null && !chest.isRetaining() && !held.isEmpty() && held.getItem() == Items.DIAMOND) {
-					chest.setRetaining(true);
-					held.setCount(held.getCount() - 1);
-					player.sendMessage(new TranslationTextComponent(TextFormatting.AQUA + "FIX: Chest will now retain items when broken!"));
-					world.playSound(null, pos, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 1);
-					chest.updateBlock();
+			TileEntity te = world.getTileEntity(pos);
+			if (te instanceof TileEntityChest) {
+				TileEntityChest chest = (TileEntityChest) te;
+				if (!player.isSneaking()) {
+					NetworkHooks.openGui((ServerPlayerEntity) player, chest, buf -> ContainerChest.writeChest(buf, chest));
+					return true;
+				} else {
+					ItemStack held = player.getHeldItem(hand);
+					if (!chest.isRetaining() && !held.isEmpty() && held.getItem() == Items.DIAMOND) {
+						chest.setRetaining(true);
+						held.setCount(held.getCount() - 1);
+						player.sendMessage(new TranslationTextComponent("Chest will now retain items when broken!").setStyle(new Style().setColor(TextFormatting.AQUA)));
+						world.playSound(null, pos, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 1);
+						chest.updateBlock();
+					}
 				}
 			}
 		}
-
 		return !player.isSneaking();
 	}
 

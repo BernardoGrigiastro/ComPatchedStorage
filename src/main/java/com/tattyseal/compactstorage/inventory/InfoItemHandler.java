@@ -2,7 +2,7 @@ package com.tattyseal.compactstorage.inventory;
 
 import com.tattyseal.compactstorage.util.StorageInfo;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.items.ItemStackHandler;
 
 public class InfoItemHandler extends ItemStackHandler {
@@ -15,14 +15,14 @@ public class InfoItemHandler extends ItemStackHandler {
 	}
 
 	@Override
-	public NBTTagCompound serializeNBT() {
-		NBTTagCompound tag = super.serializeNBT();
-		tag.removeTag("Size");
+	public CompoundNBT serializeNBT() {
+		CompoundNBT tag = super.serializeNBT();
+		tag.remove("Size");
 		return tag;
 	}
 
 	@Override
-	public void deserializeNBT(NBTTagCompound nbt) {
+	public void deserializeNBT(CompoundNBT nbt) {
 		setSize(info.getSizeX() * info.getSizeY());
 		super.deserializeNBT(nbt);
 	}

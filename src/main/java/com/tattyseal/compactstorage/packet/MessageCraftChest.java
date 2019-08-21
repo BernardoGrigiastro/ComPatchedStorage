@@ -2,72 +2,75 @@ package com.tattyseal.compactstorage.packet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
+import com.tattyseal.compactstorage.inventory.ContainerChestBuilder;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
 import com.tattyseal.compactstorage.tileentity.TileEntityChestBuilder;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.fml.network.NetworkEvent.Context;
+import shadows.placebo.util.NetworkUtils;
+import shadows.placebo.util.NetworkUtils.MessageProvider;
 
-public class MessageCraftChest implements IMessage {
+public class MessageCraftChest extends MessageProvider<MessageCraftChest> {
+
 	protected int x;
 	protected int y;
 	protected int z;
 	protected StorageInfo info;
 
-	public MessageCraftChest() {
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
-		this.info = new StorageInfo(0, 0, 180, StorageInfo.Type.CHEST);
-	}
-
-	public MessageCraftChest(BlockPos pos, StorageInfo info) {
-		this.x = pos.getX();
-		this.y = pos.getY();
-		this.z = pos.getZ();
+	public MessageCraftChest(int x, int y, int z, StorageInfo info) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
 		this.info = info;
 	}
 
-	public BlockPos getPos() {
-		return new BlockPos(x, y, z);
+	public MessageCraftChest(BlockPos pos, StorageInfo info) {
+		this(pos.getX(), pos.getY(), pos.getZ(), info);
 	}
 
-	public StorageInfo getInfo() {
-		return info;
+	public MessageCraftChest() {
 	}
 
 	@Override
-	public void fromBytes(ByteBuf buf) {
+	public Class<MessageCraftChest> getMsgClass() {
+		return MessageCraftChest.class;
+	}
+
+	@Override
+	public MessageCraftChest read(PacketBuffer buf) {
 		x = buf.readInt();
 		y = buf.readInt();
 		z = buf.readInt();
 		info = new StorageInfo(buf.readInt(), buf.readInt(), buf.readInt(), StorageInfo.Type.values()[buf.readInt()]);
+		return new MessageCraftChest(x, y, z, info);
 	}
 
 	@Override
-	public void toBytes(ByteBuf buf) {
-		buf.writeInt(x);
-		buf.writeInt(y);
-		buf.writeInt(z);
-		buf.writeInt(info.getSizeX());
-		buf.writeInt(info.getSizeY());
-		buf.writeInt(info.getHue());
-		buf.writeInt(info.getType().ordinal());
+	public void write(MessageCraftChest msg, PacketBuffer buf) {
+		buf.writeInt(msg.x);
+		buf.writeInt(msg.y);
+		buf.writeInt(msg.z);
+		buf.writeInt(msg.info.getSizeX());
+		buf.writeInt(msg.info.getSizeY());
+		buf.writeInt(msg.info.getHue());
+		buf.writeInt(msg.info.getType().ordinal());
 	}
 
-	public static IMessage onMessage(MessageCraftChest message, MessageContext ctx) {
-		WorldServer world = ctx.getServerHandler().player.getServerWorld();
-		world.addScheduledTask(() -> {
-			TileEntityChestBuilder builder = (TileEntityChestBuilder) world.getTileEntity(new BlockPos(message.x, message.y, message.z));
+	@Override
+	public void handle(MessageCraftChest msg, Supplier<Context> ctx) {
+		NetworkUtils.handlePacket(() -> () -> {
+			ServerPlayerEntity player = ctx.get().getSender();
+			TileEntityChestBuilder builder = null;
+			if (player.openContainer instanceof ContainerChestBuilder) builder = ((ContainerChestBuilder) player.openContainer).builder;
 			if (builder == null) return;
 
 			List<ItemStack> items = new ArrayList<>();
@@ -82,7 +85,7 @@ public class MessageCraftChest implements IMessage {
 				ItemStack stack = items.get(slot);
 
 				if (stack != null && slot < requiredItems.size() && requiredItems.get(slot) != null) {
-					if (OreDictionary.itemMatches(requiredItems.get(slot), stack, false) && stack.getCount() >= requiredItems.get(slot).getCount()) {
+					if (requiredItems.get(slot).getItem() == stack.getItem() && stack.getCount() >= requiredItems.get(slot).getCount()) {
 						hasRequiredMaterials = true;
 					} else {
 						hasRequiredMaterials = requiredItems.get(slot) != null && requiredItems.get(slot).getCount() == 0;
@@ -95,21 +98,20 @@ public class MessageCraftChest implements IMessage {
 			}
 
 			if (hasRequiredMaterials && builder.getItems().getStackInSlot(4).isEmpty()) {
-				ItemStack stack = message.info.getType().display.copy();
-				TileEntityChest chest = new TileEntityChest(message.info);
-				chest.writeToNBT(stack.getOrCreateSubCompound("BlockEntityTag"));
+				ItemStack stack = msg.info.getType().display.copy();
+				TileEntityChest chest = new TileEntityChest(msg.info);
+				chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
 				builder.getItems().setStackInSlot(4, stack);
 
 				for (int x = 0; x < requiredItems.size(); x++) {
 					builder.getItems().getStackInSlot(x).shrink(requiredItems.get(x).getCount());
 				}
 
-				world.playSound(null, builder.getPos(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 1);
+				player.world.playSound(null, builder.getPos(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 1);
 			} else {
-				world.playSound(null, builder.getPos(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 0);
+				player.world.playSound(null, builder.getPos(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 0);
 			}
-		});
-
-		return null;
+		}, ctx.get());
 	}
+
 }

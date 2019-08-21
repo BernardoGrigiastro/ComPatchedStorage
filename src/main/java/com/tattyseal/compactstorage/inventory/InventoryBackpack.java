@@ -1,26 +1,28 @@
 package com.tattyseal.compactstorage.inventory;
 
-import com.tattyseal.compactstorage.api.IChest;
 import com.tattyseal.compactstorage.util.StorageInfo;
 import com.tattyseal.compactstorage.util.StorageInfo.Type;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.items.ItemStackHandler;
 
-/**
- * Created by Toby on 11/02/2015.
- */
-public class InventoryBackpack implements IChest {
+public class InventoryBackpack implements IChest, INamedContainerProvider {
 
 	protected ItemStack backpack;
+	protected int slot;
 	protected StorageInfo info = new StorageInfo(0, 0, 0, Type.BACKPACK);
 	protected InfoItemHandler items = new InfoItemHandler(info);
 
-	public InventoryBackpack(ItemStack stack) {
+	public InventoryBackpack(ItemStack stack, int slot) {
 		this.backpack = stack;
-		readFromNBT(this.backpack.getOrCreateSubCompound("BlockEntityTag"));
+		read(this.backpack.getOrCreateChildTag("BlockEntityTag"));
+		this.slot = slot;
 	}
 
 	@Override
@@ -39,12 +41,12 @@ public class InventoryBackpack implements IChest {
 	}
 
 	@Override
-	public void onOpened(EntityPlayer player) {
+	public void onOpened(PlayerEntity player) {
 	}
 
 	@Override
-	public void onClosed(EntityPlayer player) {
-		writeToNBT(backpack.getOrCreateSubCompound("BlockEntityTag"));
+	public void onClosed(PlayerEntity player) {
+		write(backpack.getOrCreateChildTag("BlockEntityTag"));
 	}
 
 	@Override
@@ -62,13 +64,23 @@ public class InventoryBackpack implements IChest {
 		return items;
 	}
 
-	private void writeToNBT(NBTTagCompound tag) {
-		tag.setTag("info", info.serialize());
-		tag.setTag("items", items.serializeNBT());
+	private void write(CompoundNBT tag) {
+		tag.put("info", info.serialize());
+		tag.put("items", items.serializeNBT());
 	}
 
-	private void readFromNBT(NBTTagCompound tag) {
-		this.info.deserialize(tag.getCompoundTag("info"));
-		this.items.deserializeNBT(tag.getCompoundTag("items"));
+	private void read(CompoundNBT tag) {
+		this.info.deserialize(tag.getCompound("info"));
+		this.items.deserializeNBT(tag.getCompound("items"));
+	}
+
+	@Override
+	public Container createMenu(int id, PlayerInventory inv, PlayerEntity player) {
+		return new ContainerChest(id, player.world, this, player, player.getPosition());
+	}
+
+	@Override
+	public ITextComponent getDisplayName() {
+		return backpack.getDisplayName();
 	}
 }

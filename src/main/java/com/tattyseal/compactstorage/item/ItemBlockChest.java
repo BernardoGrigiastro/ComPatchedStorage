@@ -2,12 +2,12 @@ package com.tattyseal.compactstorage.item;
 
 import java.util.List;
 
+import com.tattyseal.compactstorage.CompactRegistry;
 import com.tattyseal.compactstorage.CompactStorage;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
 import com.tattyseal.compactstorage.util.StorageInfo;
 import com.tattyseal.compactstorage.util.StorageInfo.Type;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -26,8 +26,8 @@ import net.minecraft.world.World;
  */
 public class ItemBlockChest extends BlockItem {
 
-	public ItemBlockChest(Block block) {
-		super(block, new Item.Properties().group(CompactStorage.TAB).maxStackSize(1));
+	public ItemBlockChest() {
+		super(CompactRegistry.CHEST, new Item.Properties().group(CompactStorage.TAB).maxStackSize(1));
 	}
 
 	@Override

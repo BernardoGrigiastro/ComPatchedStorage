@@ -42,4 +42,9 @@ public class BarrelItemHandler implements IItemHandler {
 	public int getSlotLimit(int slot) {
 		return barrel.getMaxStorage();
 	}
+
+	@Override
+	public boolean isItemValid(int slot, ItemStack stack) {
+		return true;
+	}
 }

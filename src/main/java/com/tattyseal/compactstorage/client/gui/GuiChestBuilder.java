@@ -1,46 +1,41 @@
 package com.tattyseal.compactstorage.client.gui;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.GL11;
-
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.tattyseal.compactstorage.CompactStorage;
 import com.tattyseal.compactstorage.client.gui.elements.GuiSliderHue;
-import com.tattyseal.compactstorage.client.gui.responder.GuiChestBuilderResponder;
-import com.tattyseal.compactstorage.client.gui.slider.ColumnFormatType;
-import com.tattyseal.compactstorage.client.gui.slider.HueFormatType;
-import com.tattyseal.compactstorage.client.gui.slider.RowFormatType;
+import com.tattyseal.compactstorage.inventory.ContainerChestBuilder;
 import com.tattyseal.compactstorage.packet.MessageCraftChest;
 import com.tattyseal.compactstorage.packet.MessageUpdateBuilder;
 import com.tattyseal.compactstorage.tileentity.TileEntityChestBuilder;
 import com.tattyseal.compactstorage.util.RenderUtil;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiSlider;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.fml.client.config.GuiButtonExt;
+import net.minecraftforge.fml.client.config.GuiSlider;
 
-/**
- * Created by Toby on 09/11/2014.
- */
-public class GuiChestBuilder extends GuiContainer {
+public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
+
 	public World world;
-	public EntityPlayer player;
+	public PlayerEntity player;
 	public BlockPos pos;
 
-	private GuiButton buttonSubmit;
+	private Button buttonSubmit;
 
 	private GuiSlider hueSlider;
 	private GuiSlider columnSlider;
@@ -50,48 +45,55 @@ public class GuiChestBuilder extends GuiContainer {
 
 	private static final ResourceLocation CREATIVE_INVENTORY_TABS = new ResourceLocation("textures/gui/container/creative_inventory/tabs.png");
 
-	public GuiChestBuilder(Container container, World world, EntityPlayer player, BlockPos pos) {
-		super(container);
-
-		this.world = world;
-		this.player = player;
-		this.pos = pos;
-
-		this.builder = ((TileEntityChestBuilder) world.getTileEntity(pos));
-
+	public GuiChestBuilder(ContainerChestBuilder container, PlayerInventory inv, ITextComponent title) {
+		super(container, inv, title);
+		this.world = container.world;
+		this.player = container.player;
+		this.pos = container.pos;
+		this.builder = container.builder;
 		this.xSize = 7 + 162 + 7;
 		this.ySize = 7 + 108 + 13 + 54 + 4 + 18 + 7;
 	}
 
 	@Override
-	public void initGui() {
-		super.initGui();
+	public void init() {
+		super.init();
 
-		buttonSubmit = new GuiButton(4, guiLeft + 5, guiTop + 8 + 108 - 14, xSize - 31, 20, "Build");
-		buttonList.add(buttonSubmit);
+		buttonSubmit = new GuiButtonExt(guiLeft + 5, guiTop + 8 + 108 - 14, xSize - 31, 20, "Build", button -> CompactStorage.CHANNEL.sendToServer(new MessageCraftChest(pos, builder.getInfo())));
+		buttons.add(buttonSubmit);
 
 		int offsetY = 18;
 
-		columnSlider = new GuiSlider(new GuiChestBuilderResponder(this), 0, guiLeft + 5, guiTop + offsetY + 22, "Columns", 1f, 24f, 9, new ColumnFormatType());
+		columnSlider = new GuiSlider(guiLeft + 5, guiTop + offsetY + 22, 150, 20, "Columns", "", 1f, 24f, 9, true, true, b -> {
+		}, s -> {
+			builder.getInfo().setSizeX((int) MathHelper.clamp(s.sliderValue, 1, 24));
+			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(pos, builder.getInfo()));
+		});
 		columnSlider.setWidth((xSize / 2) - 7);
-		columnSlider.setSliderValue(builder.getInfo().getSizeX(), false);
-		buttonList.add(columnSlider);
+		columnSlider.sliderValue = builder.getInfo().getSizeX();
+		buttons.add(columnSlider);
 
-		rowSlider = new GuiSlider(new GuiChestBuilderResponder(this), 1, guiLeft + ((xSize / 2)) + 3, guiTop + offsetY + 22, "Rows", 1f, 12f, 3, new RowFormatType());
+		rowSlider = new GuiSlider(guiLeft + ((xSize / 2)) + 3, guiTop + offsetY + 22, 150, 20, "Rows", "", 1f, 12f, 3, true, true, b -> {
+		}, s -> {
+			builder.getInfo().setSizeY((int) MathHelper.clamp(s.sliderValue, 1, 12));
+			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(pos, builder.getInfo()));
+		});
 		rowSlider.setWidth((xSize / 2) - 7);
-		rowSlider.setSliderValue(builder.getInfo().getSizeY(), false);
-		buttonList.add(rowSlider);
+		rowSlider.sliderValue = builder.getInfo().getSizeY();
+		buttons.add(rowSlider);
 
-		hueSlider = new GuiSliderHue(new GuiChestBuilderResponder(this), 2, guiLeft + 5, guiTop + offsetY, "Hue", -1f, 360f, 180, new HueFormatType());
+		hueSlider = new GuiSliderHue(guiLeft + 5, guiTop + offsetY, "Hue", -1f, 360f, 180, s -> {
+			builder.getInfo().setHue((int) MathHelper.clamp(s.sliderValue, -1, 360));
+			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(pos, builder.getInfo()));
+		});
 		hueSlider.setWidth(xSize - 10);
-		hueSlider.setSliderValue(builder.getInfo().getHue(), false);
-		buttonList.add(hueSlider);
+		hueSlider.sliderValue = builder.getInfo().getHue();
+		buttons.add(hueSlider);
 	}
 
 	@Override
-	public void mouseClicked(int x, int y, int b) throws IOException {
-		super.mouseClicked(x, y, b);
-		hueSlider.mousePressed(mc, x, y);
+	public boolean mouseClicked(double x, double y, int button) {
+		hueSlider.mouseMoved(x, y);
 
 		for (int t = 0; t < StorageInfo.Type.values().length; t++) {
 			StorageInfo.Type type = StorageInfo.Type.values()[t];
@@ -105,16 +107,17 @@ public class GuiChestBuilder extends GuiContainer {
 			if (x >= startX && x <= endX) {
 				if (y >= startY && y <= endY) {
 					StorageInfo info = new StorageInfo(builder.getInfo().getSizeX(), builder.getInfo().getSizeY(), builder.getInfo().getHue(), type);
-					CompactStorage.NETWORK.sendToServer(new MessageUpdateBuilder(pos, info));
+					CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(pos, info));
 				}
 			}
 		}
+		return super.mouseClicked(x, y, button);
 	}
 
 	@Override
-	public void drawScreen(int mouseX, int mouseY, float k) {
-		this.drawDefaultBackground();
-		super.drawScreen(mouseX, mouseY, k);
+	public void render(int mouseX, int mouseY, float k) {
+		this.renderBackground();
+		super.render(mouseX, mouseY, k);
 
 		if (builder != null) {
 			boolean hoverTooltip = false;
@@ -131,11 +134,10 @@ public class GuiChestBuilder extends GuiContainer {
 
 					if (mouseX >= startX && mouseX <= endX) {
 						if (mouseY >= startY && mouseY <= endY) {
-							ArrayList<String> toolList = new ArrayList<String>();
-							toolList.add(stack.getDisplayName());
+							ArrayList<String> toolList = new ArrayList<>();
+							toolList.add(stack.getDisplayName().getFormattedText());
 							toolList.add(TextFormatting.AQUA + "Amount Required: " + stack.getCount());
-
-							drawHoveringText(toolList, mouseX, mouseY, fontRenderer);
+							toolList.forEach(s -> font.drawString(s, mouseX, mouseY, 0));
 							hoverTooltip = true;
 							break;
 						}
@@ -160,7 +162,7 @@ public class GuiChestBuilder extends GuiContainer {
 							ArrayList<String> toolList = new ArrayList<String>();
 							toolList.add(type.name);
 
-							drawHoveringText(toolList, mouseX, mouseY, fontRenderer);
+							toolList.forEach(s -> font.drawString(s, mouseX, mouseY, 0));
 							hoverTooltip = true;
 							break;
 						}
@@ -185,9 +187,9 @@ public class GuiChestBuilder extends GuiContainer {
 		}
 
 		RenderHelper.disableStandardItemLighting();
-		GL11.glColor3f(1, 1, 1);
+		GlStateManager.color3f(1, 1, 1);
 
-		drawTexturedModalRect(guiLeft, guiTop, 0, 0, 7, 7);
+		blit(guiLeft, guiTop, 0, 0, 7, 7);
 
 		RenderUtil.renderBackground(this, guiLeft, guiTop, 162, 14 + 15 + 15 + 15 + 36);
 
@@ -211,7 +213,7 @@ public class GuiChestBuilder extends GuiContainer {
 
 		RenderUtil.renderSlots(guiLeft + 5 + xSize - 30, guiTop + 8 + 108 - 13, 1, 1);
 
-		GL11.glColor3f(1, 1, 1);
+		GlStateManager.color3f(1, 1, 1);
 
 		StorageInfo info = builder.getInfo();
 
@@ -223,32 +225,13 @@ public class GuiChestBuilder extends GuiContainer {
 		for (int x = 0; x < info.getMaterialCost().size(); x++) {
 			ItemStack stack = info.getMaterialCost().get(x);
 
-			if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) stack.setItemDamage(0);
-
 			RenderHelper.enableGUIStandardItemLighting();
-			itemRender.renderItemIntoGUI(stack, slotX + 1 + (x * 18), slotY + 1);
+			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, slotX + 1 + (x * 18), slotY + 1);
 
 			RenderHelper.disableStandardItemLighting();
 		}
-		fontRenderer.drawString(I18n.format("tile.chestBuilder.name"), guiLeft + 7, guiTop + 7, 0x404040);
+		font.drawString(I18n.format("tile.chestBuilder.name"), guiLeft + 7, guiTop + 7, 0x404040);
 		drawTab(builder.getInfo().getType(), builder.getInfo().getType().display);
-	}
-
-	@Override
-	public void actionPerformed(GuiButton button) throws IOException {
-		super.actionPerformed(button);
-		StorageInfo info = builder.getInfo();
-
-		switch (button.id) {
-		case 4: {
-			CompactStorage.NETWORK.sendToServer(new MessageCraftChest(pos, info));
-
-			break;
-		}
-		default: {
-			break;
-		}
-		}
 	}
 
 	/**
@@ -275,23 +258,21 @@ public class GuiChestBuilder extends GuiContainer {
 
 		i1 -= 28;
 
+		Minecraft.getInstance().getTextureManager().bindTexture(CREATIVE_INVENTORY_TABS);
 		GlStateManager.disableLighting();
-		GlStateManager.color(1F, 1F, 1F); //Forge: Reset color in case Items change it.
+		GlStateManager.color3f(1F, 1F, 1F); //Forge: Reset color in case Items change it.
 		GlStateManager.enableBlend(); //Forge: Make sure blend is enabled else tabs show a white border.
-
-		this.mc.getTextureManager().bindTexture(CREATIVE_INVENTORY_TABS);
-		this.drawTexturedModalRect(l, i1, j, k, 28, 32);
-		this.zLevel = 100.0F;
-		this.itemRender.zLevel = 100.0F;
-		l += 6;
-		i1 += 8 + 1;
+		this.blit(l, i1, j, k, 28, 32);
+		this.blitOffset = 100;
+		this.itemRenderer.zLevel = 100.0F;
+		l = l + 6;
+		i1 = i1 + 8;
 		GlStateManager.enableLighting();
 		GlStateManager.enableRescaleNormal();
-		GlStateManager.color(1f, 0f, 0f);
-		this.itemRender.renderItemAndEffectIntoGUI(stack, l, i1);
-		this.itemRender.renderItemOverlays(this.fontRenderer, stack, l, i1);
+		this.itemRenderer.renderItemAndEffectIntoGUI(stack, l, i1);
+		this.itemRenderer.renderItemOverlays(this.font, stack, l, i1);
 		GlStateManager.disableLighting();
-		this.itemRender.zLevel = 0.0F;
-		this.zLevel = 0.0F;
+		this.itemRenderer.zLevel = 0.0F;
+		this.blitOffset = 0;
 	}
 }

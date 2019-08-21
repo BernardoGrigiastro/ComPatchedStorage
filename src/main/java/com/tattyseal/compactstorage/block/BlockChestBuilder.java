@@ -1,12 +1,13 @@
 package com.tattyseal.compactstorage.block;
 
-import com.tattyseal.compactstorage.CompactStorage;
 import com.tattyseal.compactstorage.tileentity.TileEntityChestBuilder;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -14,6 +15,7 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
+import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.items.ItemStackHandler;
 
 public class BlockChestBuilder extends Block {
@@ -24,14 +26,11 @@ public class BlockChestBuilder extends Block {
 
 	@Override
 	public boolean onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
-		if (!player.isSneaking()) {
-			if (!world.isRemote) {
-				player.openGui(CompactStorage.instance, 1, world, pos.getX(), pos.getY(), pos.getZ());
-			}
-
-			return true;
+		TileEntity te = world.getTileEntity(pos);
+		if (!world.isRemote && te instanceof TileEntityChestBuilder) {
+			NetworkHooks.openGui((ServerPlayerEntity) player, (INamedContainerProvider) te, buf -> buf.writeBlockPos(pos));
 		}
-		return false;
+		return true;
 	}
 
 	@Override

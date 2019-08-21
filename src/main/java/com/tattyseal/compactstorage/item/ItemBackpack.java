@@ -3,12 +3,15 @@ package com.tattyseal.compactstorage.item;
 import java.util.List;
 
 import com.tattyseal.compactstorage.CompactStorage;
+import com.tattyseal.compactstorage.inventory.ContainerChest;
+import com.tattyseal.compactstorage.inventory.InventoryBackpack;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
 import com.tattyseal.compactstorage.util.StorageInfo;
 import com.tattyseal.compactstorage.util.StorageInfo.Type;
 
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -24,6 +27,7 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.network.NetworkHooks;
 
 /**
  * Created by Toby on 11/02/2015.
@@ -36,11 +40,12 @@ public class ItemBackpack extends Item {
 
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
-		if (!world.isRemote && hand == Hand.MAIN_HAND) {
-			player.openGui(CompactStorage.instance, 0, world, (int) player.posX, (int) player.posY, (int) player.posZ);
+		if (!world.isRemote) {
+			int slot = hand == Hand.MAIN_HAND ? player.inventory.currentItem : 40;
+			InventoryBackpack inv = new InventoryBackpack(player.getHeldItem(hand), slot);
+			NetworkHooks.openGui((ServerPlayerEntity) player, inv, buf -> ContainerChest.writeChest(buf, inv));
 			world.playSound(null, player.posX, player.posY + 1, player.posZ, SoundEvents.BLOCK_WOOL_FALL, SoundCategory.BLOCKS, 0.5F, world.rand.nextFloat() * 0.1F + 0.9F);
 		}
-
 		return new ActionResult<ItemStack>(ActionResultType.SUCCESS, player.getHeldItem(hand));
 	}
 

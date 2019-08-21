@@ -1,48 +1,38 @@
 package com.tattyseal.compactstorage.inventory;
 
-import javax.annotation.Nonnull;
-
-import com.tattyseal.compactstorage.api.IChest;
+import com.tattyseal.compactstorage.CompactRegistry;
 import com.tattyseal.compactstorage.inventory.slot.SlotImmovable;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
 
-import invtweaks.api.container.ChestContainer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.Slot;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.ClickType;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.SlotItemHandler;
 
-/**
- * Created by Toby on 11/11/2014.
- */
-@ChestContainer()
 public class ContainerChest extends Container {
+
 	public World world;
-	public EntityPlayer player;
+	public PlayerEntity player;
 	public BlockPos pos;
-
 	public IChest chest;
-
 	public int invX;
 	public int invY;
-
 	public int lastId;
 	public int backpackSlot;
-
-	/***
-	 * This is carried over from the GUI for slot placement issues
-	 */
 	public int xSize;
 	public int ySize;
 
-	public ContainerChest(World world, IChest chest, EntityPlayer player, BlockPos pos) {
+	public ContainerChest(int id, World world, IChest chest, PlayerEntity player, BlockPos pos) {
+		super(CompactRegistry.CHEST_CONTAINER, id);
 		this.world = world;
 		this.player = player;
 		this.pos = pos;
@@ -50,7 +40,7 @@ public class ContainerChest extends Container {
 		chest.onOpened(player);
 		backpackSlot = -1;
 		if (chest instanceof InventoryBackpack) {
-			backpackSlot = player.inventory.currentItem;
+			backpackSlot = ((InventoryBackpack) chest).slot;
 		}
 		this.invX = chest.getInvX();
 		this.invY = chest.getInvY();
@@ -59,8 +49,28 @@ public class ContainerChest extends Container {
 		setupSlots();
 	}
 
+	public ContainerChest(int id, PlayerInventory inv, PacketBuffer buf) {
+		this(id, inv.player.world, readChest(buf, inv), inv.player, buf.readBlockPos());
+	}
+
+	public static IChest readChest(PacketBuffer buf, PlayerInventory inv) {
+		boolean chest = buf.readBoolean();
+		if (chest) return (IChest) inv.player.world.getTileEntity(buf.readBlockPos());
+		else {
+			int slot = buf.readInt();
+			return new InventoryBackpack(inv.getStackInSlot(slot), slot);
+		}
+	}
+
+	public static PacketBuffer writeChest(PacketBuffer buf, IChest chest) {
+		buf.writeBoolean(chest instanceof TileEntityChest);
+		if (chest instanceof TileEntityChest) buf.writeBlockPos(((TileEntityChest) chest).getPos());
+		else buf.writeInt(((InventoryBackpack) chest).slot);
+		return buf;
+	}
+
 	@Override
-	public boolean canInteractWith(@Nonnull EntityPlayer player) {
+	public boolean canInteractWith(PlayerEntity player) {
 		return true;
 	}
 
@@ -72,7 +82,7 @@ public class ContainerChest extends Container {
 
 		for (int y = 0; y < invY; y++) {
 			for (int x = 0; x < invX; x++) {
-				addSlotToContainer(new SlotItemHandler(chest.getItems(), lastId++, slotX + (x * 18), slotY + (y * 18)));
+				addSlot(new SlotItemHandler(chest.getItems(), lastId++, slotX + (x * 18), slotY + (y * 18)));
 			}
 		}
 
@@ -84,7 +94,7 @@ public class ContainerChest extends Container {
 		for (int x = 0; x < 9; x++) {
 			for (int y = 0; y < 3; y++) {
 				Slot slot = new Slot(player.inventory, x + y * 9 + 9, slotX + (x * 18), slotY + (y * 18));
-				addSlotToContainer(slot);
+				addSlot(slot);
 			}
 		}
 
@@ -98,13 +108,13 @@ public class ContainerChest extends Container {
 			}
 
 			SlotImmovable slot = new SlotImmovable(player.inventory, x, slotX + (x * 18), slotY, immovable);
-			addSlotToContainer(slot);
+			addSlot(slot);
 		}
 	}
 
 	@Override
-	@Nonnull
-	public ItemStack transferStackInSlot(EntityPlayer player, int slotIndex) {
+
+	public ItemStack transferStackInSlot(PlayerEntity player, int slotIndex) {
 		try {
 			Slot slot = inventorySlots.get(slotIndex);
 
@@ -131,7 +141,6 @@ public class ContainerChest extends Container {
 		}
 	}
 
-	@ChestContainer.RowSizeCallback
 	public int getInvX() {
 		return invX;
 	}
@@ -141,14 +150,14 @@ public class ContainerChest extends Container {
 	}
 
 	@Override
-	public void onContainerClosed(EntityPlayer player) {
+	public void onContainerClosed(PlayerEntity player) {
 		chest.onClosed(player);
 
 		if (!world.isRemote) {
 			boolean isChest = chest instanceof TileEntityChest;
 
 			if (!isChest) {
-				world.playSound(null, pos.getX() + 0.5d, pos.getY() + 0.5d, pos.getZ() + 0.5d, SoundEvents.BLOCK_CLOTH_STEP, SoundCategory.BLOCKS, 0.5F, world.rand.nextFloat() * 0.1F + 0.9F);
+				world.playSound(null, pos.getX() + 0.5d, pos.getY() + 0.5d, pos.getZ() + 0.5d, SoundEvents.BLOCK_WOOL_STEP, SoundCategory.BLOCKS, 0.5F, world.rand.nextFloat() * 0.1F + 0.9F);
 			}
 		}
 
@@ -156,10 +165,10 @@ public class ContainerChest extends Container {
 	}
 
 	@Override
-	@Nonnull
-	public ItemStack slotClick(int slot, int button, ClickType flag, EntityPlayer player) {
+
+	public ItemStack slotClick(int slot, int button, ClickType flag, PlayerEntity player) {
 		if (chest instanceof InventoryBackpack) {
-			if (slot >= 0 && getSlot(slot).getStack() == player.getHeldItem(EnumHand.MAIN_HAND)) { return ItemStack.EMPTY; }
+			if (slot >= 0 && getSlot(slot).getStack() == player.getHeldItem(Hand.MAIN_HAND)) { return ItemStack.EMPTY; }
 		}
 
 		return super.slotClick(slot, button, flag, player);

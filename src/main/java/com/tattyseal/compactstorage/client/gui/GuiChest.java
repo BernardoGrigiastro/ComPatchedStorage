@@ -1,27 +1,26 @@
 package com.tattyseal.compactstorage.client.gui;
 
-import java.io.IOException;
-
-import org.lwjgl.opengl.GL11;
-
-import com.tattyseal.compactstorage.api.IChest;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.tattyseal.compactstorage.inventory.ContainerChest;
+import com.tattyseal.compactstorage.inventory.IChest;
 import com.tattyseal.compactstorage.inventory.InventoryBackpack;
 import com.tattyseal.compactstorage.util.RenderUtil;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 /**
  * Created by Toby on 09/11/2014.
  */
-public class GuiChest extends GuiContainer {
+public class GuiChest extends ContainerScreen<ContainerChest> {
 	public World world;
-	public EntityPlayer player;
+	public PlayerEntity player;
 	public BlockPos pos;
 
 	private int invX;
@@ -29,19 +28,18 @@ public class GuiChest extends GuiContainer {
 
 	public IChest chest;
 
-	private KeyBinding[] HOTBAR;
+	private KeyBinding[] hotbar;
 	private int backpackSlot;
 
-	public GuiChest(Container container, IChest chest, World world, EntityPlayer player, BlockPos pos) {
-		super(container);
+	public GuiChest(ContainerChest container, PlayerInventory inv, ITextComponent title) {
+		super(container, inv, title);
 
-		this.world = world;
-		this.player = player;
-		this.pos = pos;
+		this.world = container.world;
+		this.player = container.player;
+		this.pos = container.pos;
 
-		this.chest = chest;
-
-		this.HOTBAR = Minecraft.getMinecraft().gameSettings.keyBindsHotbar;
+		this.chest = container.chest;
+		this.hotbar = Minecraft.getInstance().gameSettings.keyBindsHotbar;
 
 		backpackSlot = -1;
 		if (chest instanceof InventoryBackpack) {
@@ -56,25 +54,25 @@ public class GuiChest extends GuiContainer {
 	}
 
 	@Override
-	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-		this.drawDefaultBackground();
-		super.drawScreen(mouseX, mouseY, partialTicks);
+	public void render(int mouseX, int mouseY, float partialTicks) {
+		this.renderBackground();
+		super.render(mouseX, mouseY, partialTicks);
 		this.renderHoveredToolTip(mouseX, mouseY);
 	}
 
 	@Override
 	public void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-		this.fontRenderer.drawString("Chest (" + invX + "x" + invY + ")", 8, 6, 4210752);
-		this.fontRenderer.drawString("Inventory", 8, 15 + (invY * 18) + 5, 4210752);
+		this.font.drawString("Chest (" + invX + "x" + invY + ")", 8, 6, 4210752);
+		this.font.drawString("Inventory", 8, 15 + (invY * 18) + 5, 4210752);
 	}
 
 	@Override
 	public void drawGuiContainerBackgroundLayer(float i, int j, int k) {
-		GL11.glPushMatrix();
+		GlStateManager.pushMatrix();
 
-		GL11.glDisable(GL11.GL_LIGHTING);
-		GL11.glColor3f(1, 1, 1);
+		GlStateManager.disableLighting();
+		GlStateManager.color3f(1, 1, 1);
 
 		RenderUtil.renderChestBackground(this, guiLeft, guiTop, invX, invY);
 
@@ -82,18 +80,13 @@ public class GuiChest extends GuiContainer {
 		RenderUtil.renderSlots(guiLeft + 7 + ((((Math.max(9, invX)) * 18) / 2) - ((9 * 18) / 2)), guiTop + 17 + (invY * 18) + 13, 9, 3);
 		RenderUtil.renderSlots(guiLeft + 7 + ((((Math.max(9, invX)) * 18) / 2) - ((9 * 18) / 2)), guiTop + 17 + (invY * 18) + 13 + 54 + 4, 9, 1);
 
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 	}
 
 	@Override
-	protected void keyTyped(char c, int id) throws IOException {
-		if (backpackSlot != -1 && HOTBAR[backpackSlot].getKeyCode() == id) { return; }
-
-		super.keyTyped(c, id);
+	public boolean charTyped(char c, int id) {
+		if (backpackSlot != -1 && hotbar[backpackSlot].getKey().getKeyCode() == id) return false;
+		return super.charTyped(c, id);
 	}
 
-	@Override
-	public void onGuiClosed() {
-		super.onGuiClosed();
-	}
 }
