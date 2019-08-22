@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -80,6 +81,6 @@ public class TileEntityChestBuilder extends TileEntity implements INamedContaine
 
 	@Override
 	public ITextComponent getDisplayName() {
-		return CompactRegistry.CHEST_BUILDER.getNameTextComponent();
+		return new TranslationTextComponent(CompactRegistry.CHEST_BUILDER.getTranslationKey());
 	}
 }

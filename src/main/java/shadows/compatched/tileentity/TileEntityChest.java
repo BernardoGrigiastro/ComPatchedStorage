@@ -19,6 +19,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -265,6 +266,6 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 
 	@Override
 	public ITextComponent getDisplayName() {
-		return CompactRegistry.CHEST.getNameTextComponent();
+		return new TranslationTextComponent(CompactRegistry.CHEST.getTranslationKey());
 	}
 }
