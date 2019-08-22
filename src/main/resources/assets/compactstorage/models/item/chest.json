@@ -1,6 +1,6 @@
 {
   "textures": {
-    "texture": "compactstorage:models/chest"
+    "texture": "compatchedstorage:models/chest"
   },
   "elements": [
     {   "from": [ 1, 0, 1 ],

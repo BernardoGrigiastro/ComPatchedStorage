@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "compactstorage:block/barrel"
+      "model": "compatchedstorage:block/barrel"
     }
   }
 }

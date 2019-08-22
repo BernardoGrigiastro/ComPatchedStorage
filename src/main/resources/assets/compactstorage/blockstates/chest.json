@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "compactstorage:block/chest"
+      "model": "compatchedstorage:block/chest"
     }
   }
 }

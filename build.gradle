@@ -11,8 +11,8 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
-version = "4.0.0"
-group = "com.tattyseal.compactstorage"
+version = "2.0.0"
+group = "shadows.compatched"
 archivesBaseName = "ComPatchedStorage-1.14.4"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
@@ -54,7 +54,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes(["Specification-Title": "compactstorage",
+        attributes(["Specification-Title": "compatchedstorage",
                     "Specification-Vendor": "shadows_of_fire",
                     "Specification-Version": "24.0", // We are version 1 of the modlauncher specification
                     "Implementation-Title": project.name,

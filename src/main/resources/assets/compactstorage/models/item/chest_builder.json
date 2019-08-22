@@ -1,5 +1,5 @@
 {
-  "parent": "compactstorage:block/chest_builder",
+  "parent": "compatchedstorage:block/chest_builder",
   "display": {
     "thirdperson": {
       "rotation": [ 10, -45, 170 ],

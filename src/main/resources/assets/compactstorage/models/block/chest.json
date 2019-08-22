@@ -2,11 +2,11 @@
   "parent": "block/cube",
   "textures": {
     "particle": "blocks/planks_oak",
-    "up": "compactstorage:blocks/empty",
-    "down": "compactstorage:blocks/empty",
-    "north": "compactstorage:blocks/empty",
-    "east": "compactstorage:blocks/empty",
-    "south": "compactstorage:blocks/empty",
-    "west": "compactstorage:blocks/empty"
+    "up": "compatchedstorage:blocks/empty",
+    "down": "compatchedstorage:blocks/empty",
+    "north": "compatchedstorage:blocks/empty",
+    "east": "compatchedstorage:blocks/empty",
+    "south": "compatchedstorage:blocks/empty",
+    "west": "compatchedstorage:blocks/empty"
   }
 }
