@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 
 import com.tattyseal.compactstorage.CompactRegistry;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -13,6 +14,8 @@ import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidActionResult;
@@ -113,11 +116,12 @@ public class TileEntityBarrelFluid extends TileEntity implements IBarrel, ITicka
 		}
 	}
 
+	@OnlyIn(Dist.CLIENT)
 	public String getText() {
 		if (tank == null || tank.getFluid() == null || tank.getFluidAmount() == 0) {
-			return "Empty";
+			return I18n.format("compactstorage.text.empty");
 		} else {
-			return tank.getFluidAmount() + "/" + CAPACITY + "mB";
+			return I18n.format("compactstorage.text.fluidformat", tank.getFluidAmount(), CAPACITY);
 		}
 	}
 }

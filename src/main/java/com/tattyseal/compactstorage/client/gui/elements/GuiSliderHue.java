@@ -39,9 +39,6 @@ public class GuiSliderHue extends GuiSlider {
 		}
 	}
 
-	/**
-	 * Fired when the mouse button is released. Equivalent of MouseListener.mouseReleased(MouseEvent e).
-	 */
 	@Override
 	public void onRelease(double mouseX, double mouseY) {
 		this.dragging = false;

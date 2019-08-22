@@ -64,7 +64,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 
 		int offsetY = 18;
 
-		columnSlider = new GuiSlider(guiLeft + 5, guiTop + offsetY + 22, 150, 20, "", " Columns", 1, 24, builder.getInfo().getSizeX(), false, true, b -> {
+		columnSlider = new GuiSlider(guiLeft + 5, guiTop + offsetY + 22, 150, 20, "", " " + I18n.format("compactstorage.text.columns"), 1, 24, builder.getInfo().getSizeX(), false, true, b -> {
 		}, s -> {
 			builder.getInfo().setSizeX(s.getValueInt());
 			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(builder.getInfo()));
@@ -72,7 +72,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 		columnSlider.setWidth((xSize / 2) - 7);
 		addButton(columnSlider);
 
-		rowSlider = new GuiSlider(guiLeft + ((xSize / 2)) + 3, guiTop + offsetY + 22, 150, 20, "", " Rows", 1f, 12f, builder.getInfo().getSizeY(), false, true, b -> {
+		rowSlider = new GuiSlider(guiLeft + ((xSize / 2)) + 3, guiTop + offsetY + 22, 150, 20, "", " " + I18n.format("compactstorage.text.rows"), 1f, 12f, builder.getInfo().getSizeY(), false, true, b -> {
 		}, s -> {
 			builder.getInfo().setSizeY(s.getValueInt());
 			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(builder.getInfo()));
@@ -80,7 +80,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 		rowSlider.setWidth((xSize / 2) - 7);
 		addButton(rowSlider);
 
-		hueSlider = new GuiSliderHue(guiLeft + 5, guiTop + offsetY, "Hue ", -1f, 360f, builder.getInfo().getHue(), s -> {
+		hueSlider = new GuiSliderHue(guiLeft + 5, guiTop + offsetY, I18n.format("compactstorage.text.hue") + " ", -1f, 360f, builder.getInfo().getHue(), s -> {
 			builder.getInfo().setHue(s.getValueInt());
 			CompactStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(builder.getInfo()));
 		});
@@ -141,7 +141,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 						if (mouseY >= startY && mouseY <= endY) {
 							ArrayList<String> toolList = new ArrayList<>();
 							toolList.add(stack.getDisplayName().getFormattedText());
-							toolList.add(TextFormatting.AQUA + "Amount Required: " + stack.getCount());
+							toolList.add(TextFormatting.AQUA + I18n.format("compactstorage.text.amountreq", stack.getCount()));
 							GuiUtils.drawHoveringText(toolList, mouseX, mouseY, width, height, -1, font);
 							hoverTooltip = true;
 							break;
@@ -165,7 +165,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 					if (mouseX >= startX && mouseX <= endX) {
 						if (mouseY >= startY && mouseY <= endY) {
 							ArrayList<String> toolList = new ArrayList<String>();
-							toolList.add(type.name);
+							toolList.add(I18n.format(type.name));
 
 							GuiUtils.drawHoveringText(toolList, mouseX, mouseY, width, height, -1, font);
 							hoverTooltip = true;
@@ -234,7 +234,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, slotX + 1 + (x * 18), slotY + 1);
 			RenderHelper.disableStandardItemLighting();
 		}
-		font.drawString(I18n.format("tile.chestBuilder.name"), guiLeft + 7, guiTop + 7, 0x404040);
+		font.drawString(this.getTitle().getFormattedText(), guiLeft + 7, guiTop + 7, 0x404040);
 		drawTab(builder.getInfo().getType(), builder.getInfo().getType().display);
 	}
 

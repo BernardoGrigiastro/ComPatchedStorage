@@ -86,15 +86,10 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 
 			float scale = 0.01f;
 
-			/**
-			 * Draw the text
-			 */
-
 			GlStateManager.pushMatrix();
 			GlStateManager.translatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
 
-			float angle = Minecraft.getInstance().player.rotationYaw; //- (float) Math.toDegrees(Math.atan2(Minecraft.getMinecraft().player.posX - te.getPos().getX(), Minecraft.getMinecraft().player.posZ - te.getPos().getZ()));
-			//LogHelper.dump("Angle:" + angle);
+			float angle = Minecraft.getInstance().player.rotationYaw;
 
 			GlStateManager.translatef(0f, 0.5001f, 0f);
 			GlStateManager.rotatef(180f, 0, 1f, 0f);

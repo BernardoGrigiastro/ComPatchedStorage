@@ -1,16 +1,22 @@
 {
     "block.compactstorage.chest": "Compact Chest",
     "block.compactstorage.chest_builder": "Chest Builder",
-
     "block.compactstorage.barrel": "Barrel",
     "block.compactstorage.fluid_barrel": "Drum",
-
     "item.compactstorage.backpack": "Backpack",
-
     "itemGroup.compactStorage": "CompactStorage",
-
-    "text.columns": "Columns",
-    "text.rows": "Rows",
-
-    "backpack.inv": "Backpack"
+    "compactstorage.text.columns": "Columns",
+    "compactstorage.text.rows": "Rows",
+	"compactstorage.text.hue": "Hue",
+    "compactstorage.backpack.inv": "Backpack",
+	"compactstorage.chest.inv": "Chest (%sx%s)",
+	"compactstorage.msg.retain": "This chest will now retain items when broken.",
+	"compactstorage.text.amountreq": "Amount Required: %s",
+	"compactstorage.text.slots": "Slots: %s",
+	"compactstorage.text.hue2": "Hue: %s",
+	"compactstorage.text.white": "White",
+	"compactstorage.text.retaining": "Retaining",
+	"compactstorage.text.nonretaining": "Non-Retaining",
+	"compactstorage.text.empty": "Empty",
+	"compactstorage.text.fluidformat": "%s/%smB"
 }

@@ -8,6 +8,7 @@ import com.tattyseal.compactstorage.util.RenderUtil;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -15,9 +16,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
-/**
- * Created by Toby on 09/11/2014.
- */
 public class GuiChest extends ContainerScreen<ContainerChest> {
 	public World world;
 	public PlayerEntity player;
@@ -63,8 +61,8 @@ public class GuiChest extends ContainerScreen<ContainerChest> {
 	@Override
 	public void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-		this.font.drawString("Chest (" + invX + "x" + invY + ")", 8, 6, 4210752);
-		this.font.drawString("Inventory", 8, 15 + (invY * 18) + 5, 4210752);
+		this.font.drawString(I18n.format("compactstorage.chest.inv", invX, invY), 8, 6, 4210752);
+		this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8, 15 + (invY * 18) + 5, 4210752);
 	}
 
 	@Override

@@ -27,6 +27,8 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.NetworkHooks;
 
 /**
@@ -64,17 +66,18 @@ public class ItemBackpack extends Item {
 	}
 
 	@Override
+	@OnlyIn(Dist.CLIENT)
 	public void addInformation(ItemStack stack, World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 		if (stack.hasTag()) {
 			StorageInfo info = new StorageInfo(0, 0, 0, Type.CHEST);
 			info.deserialize(stack.getOrCreateChildTag("BlockEntityTag").getCompound("info"));
-			tooltip.add(new TranslationTextComponent("Slots: " + info.getSizeX() * info.getSizeY()).setStyle(new Style().setColor(TextFormatting.GREEN)));
+			tooltip.add(new TranslationTextComponent("compactstorage.text.slots", info.getSizeX() * info.getSizeY()).setStyle(new Style().setColor(TextFormatting.GREEN)));
 			int hue = info.getHue();
 
 			if (hue != -1) {
-				tooltip.add(new TranslationTextComponent("Hue: " + hue).setStyle(new Style().setColor(TextFormatting.AQUA)));
+				tooltip.add(new TranslationTextComponent("compactstorage.text.hue2", hue).setStyle(new Style().setColor(TextFormatting.AQUA)));
 			} else {
-				tooltip.add(new TranslationTextComponent("White").setStyle(new Style().setColor(TextFormatting.AQUA)));
+				tooltip.add(new TranslationTextComponent("compactstorage.text.white").setStyle(new Style().setColor(TextFormatting.AQUA)));
 			}
 		}
 	}

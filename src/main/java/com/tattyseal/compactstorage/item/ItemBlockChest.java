@@ -20,6 +20,8 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * Created by Toby on 06/11/2014.
@@ -40,23 +42,24 @@ public class ItemBlockChest extends BlockItem {
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<ITextComponent> list, ITooltipFlag flagIn) {
+	@OnlyIn(Dist.CLIENT)
+	public void addInformation(ItemStack stack, World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 		if (stack.hasTag()) {
 			StorageInfo info = new StorageInfo(0, 0, 0, Type.CHEST);
 			info.deserialize(stack.getOrCreateChildTag("BlockEntityTag").getCompound("info"));
-			list.add(new TranslationTextComponent("Slots: " + info.getSizeX() * info.getSizeY()).setStyle(new Style().setColor(TextFormatting.GREEN)));
+			tooltip.add(new TranslationTextComponent("compactstorage.text.slots", info.getSizeX() * info.getSizeY()).setStyle(new Style().setColor(TextFormatting.GREEN)));
 			int hue = info.getHue();
 
 			if (hue != -1) {
-				list.add(new TranslationTextComponent("Hue: " + hue).setStyle(new Style().setColor(TextFormatting.AQUA)));
+				tooltip.add(new TranslationTextComponent("compactstorage.text.hue2", hue).setStyle(new Style().setColor(TextFormatting.AQUA)));
 			} else {
-				list.add(new TranslationTextComponent("White").setStyle(new Style().setColor(TextFormatting.AQUA)));
+				tooltip.add(new TranslationTextComponent("compactstorage.text.white").setStyle(new Style().setColor(TextFormatting.AQUA)));
 			}
 
 			if (stack.getOrCreateChildTag("BlockEntityTag").getBoolean("retaining")) {
-				list.add(new TranslationTextComponent("Retaining").setStyle(new Style().setColor(TextFormatting.AQUA).setItalic(true)));
+				tooltip.add(new TranslationTextComponent("compactstorage.text.retaining").setStyle(new Style().setColor(TextFormatting.AQUA).setItalic(true)));
 			} else {
-				list.add(new TranslationTextComponent("Non-Retaining").setStyle(new Style().setColor(TextFormatting.RED).setItalic(true)));
+				tooltip.add(new TranslationTextComponent("compactstorage.text.nonretaining").setStyle(new Style().setColor(TextFormatting.RED).setItalic(true)));
 			}
 		}
 	}

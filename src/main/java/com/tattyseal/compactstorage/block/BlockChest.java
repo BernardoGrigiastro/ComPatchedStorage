@@ -80,7 +80,7 @@ public class BlockChest extends HorizontalBlock {
 					if (!chest.isRetaining() && !held.isEmpty() && held.getItem() == Items.DIAMOND) {
 						chest.setRetaining(true);
 						held.setCount(held.getCount() - 1);
-						player.sendMessage(new TranslationTextComponent("Chest will now retain items when broken!").setStyle(new Style().setColor(TextFormatting.AQUA)));
+						player.sendMessage(new TranslationTextComponent("compactstorage.msg.retain").setStyle(new Style().setColor(TextFormatting.AQUA)));
 						world.playSound(null, pos, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 1);
 						chest.updateBlock();
 					}
