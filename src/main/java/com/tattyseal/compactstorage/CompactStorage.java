@@ -6,7 +6,6 @@ import java.io.File;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.tattyseal.compactstorage.block.BlockBarrel;
 import com.tattyseal.compactstorage.block.BlockChest;
 import com.tattyseal.compactstorage.creativetabs.CreativeTabCompactStorage;
 import com.tattyseal.compactstorage.packet.MessageCraftChest;
@@ -14,14 +13,16 @@ import com.tattyseal.compactstorage.packet.MessageUpdateBuilder;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -67,10 +68,13 @@ public class CompactStorage {
 
 	@SubscribeEvent
 	public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
-		Block block = event.getEntity().world.getBlockState(event.getPos()).getBlock();
+		BlockState state = event.getWorld().getBlockState(event.getPos());
+		Block block = state.getBlock();
 
-		if (block instanceof BlockChest || block instanceof BlockBarrel) {
-			event.setUseBlock(Result.ALLOW);
+		if (block instanceof BlockChest && event.getPlayer().getHeldItem(event.getHand()).getItem() == Items.DIAMOND) {
+			state.onBlockActivated(event.getWorld(), event.getPlayer(), event.getHand(), BlockRayTraceResult.createMiss(null, null, event.getPos()));
+			event.setCanceled(true);
+			event.setCancellationResult(ActionResultType.SUCCESS);
 		}
 	}
 

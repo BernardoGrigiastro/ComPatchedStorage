@@ -1,5 +1,6 @@
 package com.tattyseal.compactstorage.client.render;
 
+import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.tattyseal.compactstorage.block.BlockBarrel;
 import com.tattyseal.compactstorage.tileentity.TileEntityBarrel;
@@ -89,11 +90,16 @@ public class TileEntityBarrelRenderer extends TileEntityRenderer<TileEntityBarre
 
 			GlStateManager.translatef((float) coordX + 0.5f, (float) coordY + 0.5f, (float) coordZ + 0.5f);
 			rotateElement(facing);
-			//GlStateManager.glRotatef(180f, 0, 0, 0);
 			GlStateManager.translatef(-(size / 3), -0.1f, -0.55f);
 			GlStateManager.scalef(size / 24, size / 24, 0.001f);
 
+			GlStateManager.enableRescaleNormal();
+			RenderHelper.enableGUIStandardItemLighting();
+			int i = getWorld().getCombinedLight(tileEntity.getPos(), 0);
+			GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, i % 65536, i / 65536);
 			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, 0, 0);
+			RenderHelper.disableStandardItemLighting();
+			GlStateManager.disableRescaleNormal();
 			GlStateManager.popMatrix();
 		}
 	}

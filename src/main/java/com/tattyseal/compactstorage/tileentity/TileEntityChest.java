@@ -10,6 +10,7 @@ import com.tattyseal.compactstorage.inventory.IChest;
 import com.tattyseal.compactstorage.inventory.InfoItemHandler;
 import com.tattyseal.compactstorage.util.StorageInfo;
 
+import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
@@ -29,31 +30,27 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import shadows.placebo.recipe.VanillaPacketDispatcher;
 
 public class TileEntityChest extends TileEntity implements IChest, ITickableTileEntity, INamedContainerProvider {
 
-	private Direction direction;
-	private Color color;
+	private Color color = Color.WHITE;
 	protected StorageInfo info;
-	protected boolean retaining;
-	private float lidAngle;
-	private float prevLidAngle;
-	protected int numPlayersUsing;
-	protected int ticksSinceSync;
+	protected boolean retaining = false;
+	private float lidAngle = 0;
+	private float prevLidAngle = 0;
+	protected int numPlayersUsing = 0;
+	protected int ticksSinceSync = 0;
 	private InfoItemHandler items;
 
-	public TileEntityChest() {
+	public TileEntityChest(StorageInfo info) {
 		super(CompactRegistry.CHEST_TILE);
-		this.setDirection(Direction.NORTH);
-		this.info = new StorageInfo(9, 3, 180, StorageInfo.Type.CHEST);
+		this.info = info;
 		this.items = new InfoItemHandler(info);
 	}
 
-	public TileEntityChest(StorageInfo info) {
-		this();
-		this.setDirection(Direction.NORTH);
-		this.info = info;
-		this.items = new InfoItemHandler(info);
+	public TileEntityChest() {
+		this(new StorageInfo(9, 3, 180, StorageInfo.Type.CHEST));
 	}
 
 	@Override
@@ -92,7 +89,6 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 	@Nonnull
 	public CompoundNBT write(CompoundNBT tag) {
 		super.write(tag);
-		tag.putInt("facing", getDirection().ordinal());
 		tag.put("info", info.serialize());
 		tag.putBoolean("retaining", retaining);
 		tag.put("items", getItems().serializeNBT());
@@ -102,18 +98,16 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 	@Override
 	public void read(CompoundNBT tag) {
 		super.read(tag);
-		this.setDirection(Direction.byIndex(tag.getInt("facing")));
 		this.retaining = tag.getBoolean("retaining");
 		this.info.deserialize(tag.getCompound("info"));
 		this.getItems().deserializeNBT(tag.getCompound("items"));
-		this.setColor(getHue() == -1 ? Color.white : Color.getHSBColor(info.getHue() / 360f, 0.5f, 0.5f));
+		this.color = getHue() == -1 ? Color.white : Color.getHSBColor(info.getHue() / 360f, 0.5f, 0.5f);
 	}
 
 	@Override
 	@Nonnull
 	public CompoundNBT getUpdateTag() {
 		CompoundNBT tag = super.getUpdateTag();
-		tag.putInt("facing", getDirection().ordinal());
 		tag.put("info", info.serialize());
 		tag.putBoolean("retaining", retaining);
 		return tag;
@@ -121,11 +115,10 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 
 	@Override
 	public void handleUpdateTag(CompoundNBT tag) {
-		this.setDirection(Direction.byIndex(tag.getInt("facing")));
 		this.retaining = tag.getBoolean("retaining");
 		this.info.deserialize(tag.getCompound("info"));
 		this.getItems().setSize(info.getSizeX() * info.getSizeY());
-		this.setColor(getHue() == -1 ? Color.white : Color.getHSBColor(info.getHue() / 360f, 0.5f, 0.5f));
+		this.color = getHue() == -1 ? Color.white : Color.getHSBColor(info.getHue() / 360f, 0.5f, 0.5f);
 	}
 
 	@Override
@@ -232,10 +225,6 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 		return color;
 	}
 
-	public void setColor(Color color) {
-		this.color = color;
-	}
-
 	@Override
 	public ItemStackHandler getItems() {
 		return items;
@@ -247,14 +236,11 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 
 	public void setRetaining(boolean retain) {
 		this.retaining = retain;
+		VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 	}
 
 	public Direction getDirection() {
-		return direction;
-	}
-
-	public void setDirection(Direction direction) {
-		this.direction = direction;
+		return world.getBlockState(pos).get(HorizontalBlock.HORIZONTAL_FACING);
 	}
 
 	public float getLidAngle() {

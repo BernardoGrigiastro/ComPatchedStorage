@@ -4,6 +4,7 @@ import com.tattyseal.compactstorage.tileentity.TileEntityChestBuilder;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -21,7 +22,7 @@ import net.minecraftforge.items.ItemStackHandler;
 public class BlockChestBuilder extends Block {
 
 	public BlockChestBuilder() {
-		super(Block.Properties.create(Material.IRON).hardnessAndResistance(2).harvestLevel(1).harvestTool(ToolType.PICKAXE));
+		super(Block.Properties.create(Material.IRON).sound(SoundType.METAL).hardnessAndResistance(2).harvestLevel(1).harvestTool(ToolType.PICKAXE));
 	}
 
 	@Override

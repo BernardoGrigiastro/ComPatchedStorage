@@ -16,6 +16,8 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+import shadows.placebo.recipe.VanillaPacketDispatcher;
 
 public class TileEntityBarrel extends TileEntity implements IBarrel {
 
@@ -71,7 +73,7 @@ public class TileEntityBarrel extends TileEntity implements IBarrel {
 			}
 			return ItemStack.EMPTY;
 		} else {
-			if (item.getItem() == workingStack.getItem() && count < getMaxStorage()) {
+			if (ItemHandlerHelper.canItemStacksStack(item, workingStack) && count < getMaxStorage()) {
 				int used = Math.min(workingStack.getCount(), getMaxStorage() - count);
 				if (!simulate) {
 					count += used;
@@ -152,5 +154,11 @@ public class TileEntityBarrel extends TileEntity implements IBarrel {
 
 	public int getCount() {
 		return count;
+	}
+
+	@Override
+	public void markDirty() {
+		super.markDirty();
+		VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 	}
 }

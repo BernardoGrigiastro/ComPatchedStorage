@@ -1,22 +1,27 @@
 package com.tattyseal.compactstorage.block;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.tattyseal.compactstorage.CompactRegistry;
 import com.tattyseal.compactstorage.inventory.ContainerChest;
 import com.tattyseal.compactstorage.tileentity.TileEntityChest;
+import com.tattyseal.compactstorage.util.EntityUtil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.HorizontalBlock;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.fluid.IFluidState;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.NonNullList;
@@ -34,20 +39,31 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.LootContext.Builder;
+import net.minecraft.world.storage.loot.LootParameters;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.network.NetworkHooks;
 
-public class BlockChest extends Block {
+public class BlockChest extends HorizontalBlock {
 
 	public static final VoxelShape SHAPE = VoxelShapes.create(new AxisAlignedBB(0.0625D, 0.0D, 0.0625D, 0.9375D, 0.875D, 0.9375D));
 
 	public BlockChest() {
-		super(Block.Properties.create(Material.WOOD).hardnessAndResistance(2).harvestLevel(1).harvestTool(ToolType.AXE));
+		super(Block.Properties.create(Material.WOOD).sound(SoundType.WOOD).hardnessAndResistance(2).harvestLevel(1).harvestTool(ToolType.AXE));
 	}
 
 	@Override
 	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
 		return SHAPE;
+	}
+
+	@Override
+	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+		builder.add(HORIZONTAL_FACING);
+	}
+
+	@Override
+	public BlockState getStateForPlacement(BlockItemUseContext context) {
+		return getDefaultState().with(HORIZONTAL_FACING, EntityUtil.get2dOrientation(context.getPlayer()));
 	}
 
 	@Override
@@ -93,25 +109,13 @@ public class BlockChest extends Block {
 	@Deprecated
 	public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (newState.getBlock() != this) {
-			TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
-
-			if (!world.isRemote && chest != null) {
-				ItemStack stack = new ItemStack(CompactRegistry.CHEST);
-
-				if (chest.isRetaining()) {
-					chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
-				} else {
-					for (int slot = 0; slot < chest.getItems().getSlots(); slot++) {
-						Block.spawnAsEntity(world, pos, chest.getItems().getStackInSlot(slot));
-					}
-					chest.write(stack.getOrCreateChildTag("BlockEntityTag")).remove("items");
-				}
-
-				world.addEntity(new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack));
-			}
-
 			super.onReplaced(state, world, pos, newState, isMoving);
 		}
+	}
+
+	@Override
+	public boolean removedByPlayer(BlockState state, World world, BlockPos pos, PlayerEntity player, boolean willHarvest, IFluidState fluid) {
+		return super.removedByPlayer(state, world, pos, player, willHarvest, fluid);
 	}
 
 	@Override
@@ -129,7 +133,20 @@ public class BlockChest extends Block {
 
 	@Override
 	public List<ItemStack> getDrops(BlockState state, Builder builder) {
-		return Collections.emptyList();
+		List<ItemStack> stacks = new ArrayList<>();
+		ItemStack stack = new ItemStack(CompactRegistry.CHEST);
+		TileEntity te = builder.get(LootParameters.BLOCK_ENTITY);
+
+		TileEntityChest chest = te instanceof TileEntityChest ? (TileEntityChest) te : new TileEntityChest();
+		if (!chest.isRetaining()) {
+			for (int slot = 0; slot < chest.getItems().getSlots(); slot++) {
+				ItemStack s = chest.getItems().getStackInSlot(slot);
+				if (!s.isEmpty()) stacks.add(s);
+			}
+			chest.write(stack.getOrCreateChildTag("BlockEntityTag")).remove("items");
+		} else chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
+		stacks.add(stack);
+		return stacks;
 	}
 
 }
