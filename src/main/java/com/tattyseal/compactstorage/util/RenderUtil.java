@@ -31,8 +31,8 @@ public class RenderUtil {
 
 		worldRenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 		worldRenderer.pos(x, y + realHeight, 0).tex(0, uz).endVertex();
-		worldRenderer.pos(x + realWidth, y + realHeight, 0).tex(ux, uz).endVertex();//(1 / slotTextureWidth) * (width), (1 / slotTextureHeight) * (height));
-		worldRenderer.pos(x + realWidth, y, 0).tex(ux, 0).endVertex();//1 / slotTextureWidth) * (width), 0);
+		worldRenderer.pos(x + realWidth, y + realHeight, 0).tex(ux, uz).endVertex();
+		worldRenderer.pos(x + realWidth, y, 0).tex(ux, 0).endVertex();
 		worldRenderer.pos(x, y, 0).tex(0, 0).endVertex();
 		tessellator.draw();
 	}

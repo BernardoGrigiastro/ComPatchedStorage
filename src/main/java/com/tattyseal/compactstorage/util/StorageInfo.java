@@ -146,8 +146,8 @@ public class StorageInfo {
 	}
 
 	public static enum Type {
-		CHEST("Chest", new ItemStack(CompactRegistry.CHEST, 1)),
-		BACKPACK("Backpack", new ItemStack(CompactRegistry.BACKPACK, 1));
+		CHEST("block.compactstorage.chest", new ItemStack(CompactRegistry.CHEST, 1)),
+		BACKPACK("compactstorage.backpack.inv", new ItemStack(CompactRegistry.BACKPACK, 1));
 
 		public String name;
 		public ItemStack display;
