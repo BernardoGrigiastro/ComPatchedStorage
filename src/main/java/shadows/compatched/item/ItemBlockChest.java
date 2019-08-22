@@ -2,13 +2,17 @@ package shadows.compatched.item;
 
 import java.util.List;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
@@ -66,4 +70,19 @@ public class ItemBlockChest extends BlockItem {
 		tag.getCompound("BlockEntityTag").remove("items");
 		return tag;
 	}
+
+	@Override
+	protected boolean onBlockPlaced(BlockPos pos, World world, PlayerEntity player, ItemStack stack, BlockState state) {
+		if (world.isRemote) {
+			CompoundNBT compoundnbt = stack.getChildTag("BlockEntityTag");
+			if (compoundnbt != null) {
+				TileEntity tileentity = world.getTileEntity(pos);
+				if (tileentity instanceof TileEntityChest) {
+					((TileEntityChest) tileentity).getInfo().deserialize(compoundnbt.getCompound("info"));
+				}
+			}
+		}
+		return super.onBlockPlaced(pos, world, player, stack, state);
+	}
+
 }

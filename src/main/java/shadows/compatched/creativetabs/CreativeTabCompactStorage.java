@@ -4,13 +4,14 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import shadows.compatched.ComPatchedStorage;
 import shadows.compatched.CompactRegistry;
 import shadows.compatched.tileentity.TileEntityChest;
 
 public class CreativeTabCompactStorage extends ItemGroup {
 
 	public CreativeTabCompactStorage() {
-		super("compactStorage");
+		super(ComPatchedStorage.MODID);
 	}
 
 	@Override

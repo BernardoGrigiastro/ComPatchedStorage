@@ -1,7 +1,7 @@
 {
   "parent": "block/cube",
   "textures": {
-    "particle": "blocks/planks_oak",
+    "particle": "compatchedstorage:models/chestparticle",
     "up": "compatchedstorage:blocks/empty",
     "down": "compatchedstorage:blocks/empty",
     "north": "compatchedstorage:blocks/empty",

@@ -4,7 +4,7 @@
     "block.compatchedstorage.barrel": "Barrel",
     "block.compatchedstorage.fluid_barrel": "Drum",
     "item.compatchedstorage.backpack": "Backpack",
-    "itemGroup.compatchedstorage": "compatchedstorage",
+    "itemGroup.compatchedstorage": "ComPatchedStorage",
     "compatchedstorage.text.columns": "Columns",
     "compatchedstorage.text.rows": "Rows",
 	"compatchedstorage.text.hue": "Hue",
