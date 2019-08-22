@@ -1,90 +1,110 @@
 package shadows.compatched;
 
-import java.awt.Color;
-import java.io.File;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.tattyseal.compactstorage.CompactStorage;
+import com.tattyseal.compactstorage.item.ItemBlockChest;
+import com.tattyseal.compactstorage.util.LogHelper;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.ItemGroup;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.EnumHelper;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.RegistryEvent.Register;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
-import shadows.compatched.block.BlockChest;
-import shadows.compatched.creativetabs.CreativeTabCompactStorage;
-import shadows.compatched.packet.MessageCraftChest;
-import shadows.compatched.packet.MessageUpdateBuilder;
-import shadows.compatched.util.StorageInfo;
-import shadows.placebo.config.Configuration;
-import shadows.placebo.recipe.RecipeHelper;
-import shadows.placebo.util.NetworkUtils;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
 
-@Mod(ComPatchedStorage.MODID)
+@Mod(modid = ComPatchedStorage.MODID, name = ComPatchedStorage.MODNAME, version = ComPatchedStorage.VERSION, dependencies = "required-after:compactstorage@[3.1,4.0)", acceptableRemoteVersions = "[1.6.0,)")
 public class ComPatchedStorage {
 
-	public static final String MODID = "compatchedstorage";
-	public static final ItemGroup TAB = new CreativeTabCompactStorage();
-	public static final Logger LOGGER = LogManager.getLogger(MODID);
-	public static final RecipeHelper HELPER = new RecipeHelper(MODID);
-	//Formatter::off
-    public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(new ResourceLocation(MODID, MODID))
-            .clientAcceptedVersions(s->true)
-            .serverAcceptedVersions(s->true)
-            .networkProtocolVersion(() -> "1.0.0")
-            .simpleChannel();
-    //Formatter::on
+	public static final String MODID = "compatched";
+	public static final String MODNAME = "ComPatchedStorage";
+	public static final String VERSION = "1.6.0";
 
-	public ComPatchedStorage() {
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-		MinecraftForge.EVENT_BUS.addListener(this::onPlayerInteract);
+	@EventHandler
+	public void preInit(FMLPreInitializationEvent e) throws Exception {
+		MinecraftForge.EVENT_BUS.register(this);
+		EnumHelper.setFailsafeFieldValue(LogHelper.class.getField("logger"), null, new DummyLogger());
+
 	}
 
 	@SubscribeEvent
-	public void setup(FMLCommonSetupEvent e) {
-		ConfigurationHandler.configuration = new Configuration(new File(FMLPaths.CONFIGDIR.get().toFile(), MODID + ".cfg"));
-		NetworkUtils.registerMessage(CHANNEL, 0, new MessageUpdateBuilder());
-		NetworkUtils.registerMessage(CHANNEL, 1, new MessageCraftChest());
-		HELPER.addShaped(CompactRegistry.CHEST_BUILDER, 3, 3, Items.IRON_INGOT, Blocks.LEVER, Items.IRON_INGOT, Items.IRON_INGOT, Blocks.CHEST, Items.IRON_INGOT, Items.IRON_INGOT, Blocks.LEVER, Items.IRON_INGOT);
-		HELPER.addShaped(CompactRegistry.BARREL, 3, 3, Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT, Blocks.IRON_BLOCK, Blocks.CHEST, Blocks.IRON_BLOCK, Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT);
-		//HELPER.addShaped(CompactRegistry.FLUID_BARREL, 3, 3, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT);
-		ConfigurationHandler.init();
-	}
-
-	@SubscribeEvent
-	public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
-		BlockState state = event.getWorld().getBlockState(event.getPos());
-		Block block = state.getBlock();
-
-		if (block instanceof BlockChest && event.getPlayer().getHeldItem(event.getHand()).getItem() == Items.DIAMOND) {
-			state.onBlockActivated(event.getWorld(), event.getPlayer(), event.getHand(), BlockRayTraceResult.createMiss(null, null, event.getPos()));
-			event.setCanceled(true);
-			event.setCancellationResult(ActionResultType.SUCCESS);
+	public void caps(AttachCapabilitiesEvent<TileEntity> e) {
+		TileEntity te = e.getObject();
+		if (te instanceof TileChestExt) {
+			e.addCapability(new ResourceLocation(MODID, "invwrapper"), new InvWrappingCap((IInventory) te));
 		}
 	}
 
-	public static int getColorFromHue(int hue) {
-		Color color = (hue == -1 ? Color.white : Color.getHSBColor(hue / 360f, 0.5f, 0.5f).brighter());
-		return color.getRGB();
+	@SubscribeEvent
+	public void blocks(Register<Block> e) {
+		ModContainer us = Loader.instance().activeModContainer();
+		Loader.instance().setActiveModContainer(Loader.instance().getModList().stream().filter(mc -> mc.getModId().equals(CompactStorage.ID)).findFirst().get());
+		CompactStorage.ModBlocks.chest = new BlockChestExt();
+		CompactStorage.ModBlocks.chestBuilder = new BlockBuilderExt();
+		Loader.instance().setActiveModContainer(us);
+		e.getRegistry().register(CompactStorage.ModBlocks.chest);
+		e.getRegistry().register(CompactStorage.ModBlocks.chestBuilder);
+		GameRegistry.registerTileEntity(TileChestExt.class, new ResourceLocation("tileChest"));
+		GameRegistry.registerTileEntity(TileBuilderExt.class, new ResourceLocation("tileChestBuilder"));
 	}
 
-	public static int getColorFromNBT(ItemStack stack) {
-		StorageInfo info = new StorageInfo(0, 0, 0, null);
-		info.deserialize(stack.getOrCreateChildTag("BlockEntityTag").getCompound("info"));
-		return getColorFromHue(info.getHue());
+	@SubscribeEvent
+	public void items(Register<Item> e) {
+		CompactStorage.ModItems.backpack = new ItemBackpackExt().setRegistryName(CompactStorage.ID, "backpack");
+		e.getRegistry().register(CompactStorage.ModItems.backpack);
+
+		CompactStorage.ModItems.ibChest = new ItemBlockChest(CompactStorage.ModBlocks.chest) {
+			@Override
+			public String getCreatorModId(net.minecraft.item.ItemStack itemStack) {
+				return MODID;
+			}
+		};
+		CompactStorage.ModItems.ibChest.setRegistryName(CompactStorage.ID, "compactChest");
+		e.getRegistry().register(CompactStorage.ModItems.ibChest);
+
+		Item ibChestBuilder = new ItemBlock(CompactStorage.ModBlocks.chestBuilder) {
+			@Override
+			public String getCreatorModId(ItemStack itemStack) {
+				return MODID;
+			}
+		}.setRegistryName(CompactStorage.ID, "chestBuilder").setCreativeTab(CompactStorage.tabCS);
+		e.getRegistry().register(ibChestBuilder);
 	}
+
+	private static class InvWrappingCap implements ICapabilityProvider {
+
+		InvWrapper wrapped;
+
+		InvWrappingCap(IInventory toWrap) {
+			wrapped = new InvWrapper(toWrap);
+		}
+
+		@Override
+		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+			return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
+		}
+
+		@Override
+		public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+			if (this.hasCapability(capability, facing)) return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(wrapped);
+			return null;
+		}
+
+	}
+
 }

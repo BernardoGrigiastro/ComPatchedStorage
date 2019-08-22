@@ -1,0 +1,17 @@
+[{
+	"modid": "compatched",
+	"name": "ComPatchedStorage",
+	"description": "A patch for Compact Storage",
+	"version": "${version}",
+	"mcversion": "${mcversion}",
+	"url": "",
+	"updateUrl": "",
+	"authorList": [
+		"Shadows_of_Fire"
+	],
+	"credits": "",
+	"logoFile": "",
+	"screenshots": [],
+	"parent": "",
+	"dependencies": []
+}]
