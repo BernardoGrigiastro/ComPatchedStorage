@@ -36,7 +36,7 @@ public class ClientHandler {
 
 	@SubscribeEvent
 	public static void colors(ColorHandlerEvent.Item e) {
-		e.getItemColors().register((stack, color) -> ComPatchedStorage.getColorFromNBT(stack), CompactRegistry.BACKPACK, CompactRegistry.CHEST);
+		DeferredWorkQueue.runLater(() -> e.getItemColors().register((stack, color) -> ComPatchedStorage.getColorFromNBT(stack), CompactRegistry.BACKPACK, CompactRegistry.CHEST));
 	}
 
 }
