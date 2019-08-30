@@ -1,0 +1,22 @@
+{
+    "block.compatchedstorage.chest": "Kompakt Sandık",
+    "block.compatchedstorage.chest_builder": "Sandık İnşaatçısı",
+    "block.compatchedstorage.barrel": "Fıçı",
+    "block.compatchedstorage.fluid_barrel": "Bidon",
+    "item.compatchedstorage.backpack": "Sırt Çantası",
+    "itemGroup.compatchedstorage": "ComPatchedStorage",
+    "compatchedstorage.text.columns": "Sütunlar",
+    "compatchedstorage.text.rows": "Satırlar",
+	"compatchedstorage.text.hue": "Renk",
+    "compatchedstorage.backpack.inv": "Sırt Çantası",
+	"compatchedstorage.chest.inv": "Sandık (%sx%s)",
+	"compatchedstorage.msg.retain": "Bu sandık kırıldığında eşyaları geri tutacaktır.",
+	"compatchedstorage.text.amountreq": "Gereken Oran: %s",
+	"compatchedstorage.text.slots": "Slotlar: %s",
+	"compatchedstorage.text.hue2": "Renk: %s",
+	"compatchedstorage.text.white": "Beyaz",
+	"compatchedstorage.text.retaining": "Geri Tutan",
+	"compatchedstorage.text.nonretaining": "Geri Tutmayan",
+	"compatchedstorage.text.empty": "Boş",
+	"compatchedstorage.text.fluidformat": "%s/%smB"
+}
