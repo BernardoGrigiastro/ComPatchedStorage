@@ -12,28 +12,26 @@ import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidActionResult;
-import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import shadows.compatched.CompactRegistry;
+import shadows.placebo.recipe.VanillaPacketDispatcher;
 
 public class TileEntityBarrelFluid extends TileEntity implements IBarrel, ITickableTileEntity {
-	public static final int CAPACITY = 32000;
 
-	public FluidTank tank;
+	public FluidTank tank = new FluidTank(32000);
 	public int hue;
 
 	public int lastAmount;
 
 	public TileEntityBarrelFluid() {
 		super(CompactRegistry.FLUID_BARREL_TILE);
-		tank = new FluidTank(CAPACITY);
 		hue = 128;
 	}
 
@@ -53,8 +51,6 @@ public class TileEntityBarrelFluid extends TileEntity implements IBarrel, ITicka
 			if (res.isSuccess()) { return res.result; }
 		}
 
-		markDirty();
-
 		return stack;
 	}
 
@@ -72,7 +68,6 @@ public class TileEntityBarrelFluid extends TileEntity implements IBarrel, ITicka
 
 	@Override
 	public void read(CompoundNBT compound) {
-		tank = new FluidTank(CAPACITY);
 		tank.readFromNBT(compound.getCompound("fluid"));
 		hue = compound.getInt("hue");
 		super.read(compound);
@@ -80,20 +75,20 @@ public class TileEntityBarrelFluid extends TileEntity implements IBarrel, ITicka
 
 	@Override
 	public CompoundNBT getUpdateTag() {
-		CompoundNBT tag = super.getUpdateTag();
-		write(tag);
-		return tag;
+		return write(new CompoundNBT());
 	}
 
 	@Nullable
 	@Override
 	public SUpdateTileEntityPacket getUpdatePacket() {
-		return new SUpdateTileEntityPacket(pos, 0, write(new CompoundNBT()));
+		CompoundNBT tag = new CompoundNBT();
+		tag.put("fluid", tank.getFluid().writeToNBT(new CompoundNBT()));
+		return new SUpdateTileEntityPacket(pos, 0, tag);
 	}
 
 	@Override
 	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-		read(pkt.getNbtCompound());
+		tank.setFluid(FluidStack.loadFluidStackFromNBT(pkt.getNbtCompound().getCompound("fluid")));
 	}
 
 	LazyOptional<IFluidHandler> fluidOpt = LazyOptional.of(() -> tank);
@@ -106,21 +101,25 @@ public class TileEntityBarrelFluid extends TileEntity implements IBarrel, ITicka
 
 	@Override
 	public void tick() {
-		if (tank != null) {
-			if (tank.getFluid() != null && lastAmount != tank.getFluidAmount()) {
-				markDirty();
-			}
+		if (world.isRemote) return;
+		if (lastAmount != tank.getFluidAmount()) {
+			markDirty();
+		}
 
-			lastAmount = tank.getFluid() == null ? 0 : tank.getFluidAmount();
+		lastAmount = tank.getFluid().isEmpty() ? 0 : tank.getFluidAmount();
+	}
+
+	public String getText() {
+		if (tank.getFluid().isEmpty() || tank.getFluidAmount() == 0) {
+			return I18n.format("compatchedstorage.text.empty");
+		} else {
+			return I18n.format("compatchedstorage.text.fluidformat", tank.getFluidAmount(), 32000);
 		}
 	}
 
-	@OnlyIn(Dist.CLIENT)
-	public String getText() {
-		if (tank == null || tank.getFluid() == null || tank.getFluidAmount() == 0) {
-			return I18n.format("compatchedstorage.text.empty");
-		} else {
-			return I18n.format("compatchedstorage.text.fluidformat", tank.getFluidAmount(), CAPACITY);
-		}
+	@Override
+	public void markDirty() {
+		super.markDirty();
+		VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 	}
 }

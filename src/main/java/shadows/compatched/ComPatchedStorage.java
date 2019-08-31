@@ -61,7 +61,7 @@ public class ComPatchedStorage {
 		NetworkUtils.registerMessage(CHANNEL, 1, new MessageCraftChest());
 		HELPER.addShaped(CompactRegistry.CHEST_BUILDER, 3, 3, Items.IRON_INGOT, Blocks.LEVER, Items.IRON_INGOT, Items.IRON_INGOT, Blocks.CHEST, Items.IRON_INGOT, Items.IRON_INGOT, Blocks.LEVER, Items.IRON_INGOT);
 		HELPER.addShaped(CompactRegistry.BARREL, 3, 3, Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT, Blocks.IRON_BLOCK, Blocks.CHEST, Blocks.IRON_BLOCK, Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT);
-		//HELPER.addShaped(CompactRegistry.FLUID_BARREL, 3, 3, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT);
+		HELPER.addShaped(CompactRegistry.FLUID_BARREL, 3, 3, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT);
 		ConfigurationHandler.init();
 	}
 

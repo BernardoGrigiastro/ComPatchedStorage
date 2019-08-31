@@ -11,8 +11,12 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.biome.BiomeColors;
 import net.minecraftforge.fluids.FluidStack;
+import shadows.compatched.block.BlockBarrel;
 import shadows.compatched.tileentity.TileEntityBarrelFluid;
 
 public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntityBarrelFluid> {
@@ -24,8 +28,8 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 
 		FluidStack stack = te.tank.getFluid();
 
-		if (stack != null) {
-			TextureAtlasSprite tex = Minecraft.getInstance().getTextureMap().getAtlasSprite(stack.getFluid().getStill().toString());
+		if (!stack.isEmpty()) {
+			TextureAtlasSprite tex = Minecraft.getInstance().getTextureMap().getAtlasSprite(stack.getFluid().getAttributes().getStillTexture().toString());
 
 			Tessellator tessellator = Tessellator.getInstance();
 			BufferBuilder builder = tessellator.getBuffer();
@@ -38,13 +42,23 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 
 			GlStateManager.disableLighting();
 
-			float increments = (1f / 16f);
+			int color = stack.getFluid().getAttributes().getColor(te.getWorld(), te.getPos());
+			if (stack.getFluid() == Fluids.WATER) color = BiomeColors.getWaterColor(te.getWorld(), te.getPos());
+			if (color != -1) {
+				float[] colors = new float[3];
+				colors[0] = (float) (color >> 0x10 & 0xFF) / 0xFF;
+				colors[1] = (float) (color >> 0x8 & 0xFF) / 0xFF;
+				colors[2] = (float) (color & 0xFF) / 0xFF;
+				GlStateManager.color3f(colors[0], colors[1], colors[2]);
+			}
 
-			float minXZ = increments * 3f;
-			float maxXZ = increments * 13f;
+			double px = 1D / 16;
 
-			float baseHeight = increments;
-			float height = ((increments * 14f) / te.tank.getCapacity()) * te.tank.getFluidAmount() + baseHeight;
+			double minXZ = px * 3;
+			double maxXZ = px * 13;
+
+			double baseHeight = px;
+			double height = ((px * 14) / te.tank.getCapacity()) * te.tank.getFluidAmount() + baseHeight;
 
 			double minU = tex.getInterpolatedU(3D);
 			double maxU = tex.getInterpolatedU(13D);
@@ -52,7 +66,7 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 			double maxV = tex.getInterpolatedV(13D);
 
 			double minV_side = tex.getInterpolatedV(0D);
-			double maxV_side = tex.getInterpolatedV((te.tank.getFluidAmount() - 0) * (16 - 0) / (te.tank.getCapacity() - 0) + 0);
+			double maxV_side = tex.getInterpolatedV(te.tank.getFluidAmount() * 16D / (te.tank.getCapacity()));
 
 			builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 			builder.pos(maxXZ, height, maxXZ).tex(maxU, maxV).endVertex();
@@ -89,13 +103,13 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 			GlStateManager.pushMatrix();
 			GlStateManager.translatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
 
-			float angle = Minecraft.getInstance().player.rotationYaw;
+			Direction facing = te.getWorld().getBlockState(te.getPos()).get(BlockBarrel.HORIZONTAL_FACING);
 
 			GlStateManager.translatef(0f, 0.5001f, 0f);
 			GlStateManager.rotatef(180f, 0, 1f, 0f);
 			GlStateManager.rotatef(90f, 1, 0, 0);
 
-			GlStateManager.rotatef(angle, 0, 0, 1f);
+			GlStateManager.rotatef(facing.getHorizontalAngle(), 0, 0, 1f);
 
 			GlStateManager.scalef(scale, scale, scale);
 
