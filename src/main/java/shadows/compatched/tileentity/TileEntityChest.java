@@ -216,7 +216,7 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 	LazyOptional<IItemHandler> itemOpt = LazyOptional.of(() -> items);
 
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap) {
+	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return itemOpt.cast();
 		return super.getCapability(cap);
 	}

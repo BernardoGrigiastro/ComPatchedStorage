@@ -9,6 +9,7 @@ import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.capabilities.Capability;
@@ -55,7 +56,7 @@ public class TileEntityChestBuilder extends TileEntity implements INamedContaine
 	LazyOptional<IItemHandler> itemOpt = LazyOptional.of(() -> items);
 
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap) {
+	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return itemOpt.cast();
 		return super.getCapability(cap);
 	}

@@ -100,6 +100,7 @@ public class TileEntityBarrelRenderer extends TileEntityRenderer<TileEntityBarre
 			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, 0, 0);
 			RenderHelper.disableStandardItemLighting();
 			GlStateManager.disableRescaleNormal();
+			GlStateManager.disableBlend();
 			GlStateManager.popMatrix();
 		}
 	}
