@@ -58,7 +58,7 @@ public class TileEntityChestBuilder extends TileEntity implements INamedContaine
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return itemOpt.cast();
-		return super.getCapability(cap);
+		return super.getCapability(cap, side);
 	}
 
 	public class ItemHandler extends ItemStackHandler {

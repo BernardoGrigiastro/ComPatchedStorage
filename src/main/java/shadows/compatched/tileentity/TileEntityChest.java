@@ -218,7 +218,7 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return itemOpt.cast();
-		return super.getCapability(cap);
+		return super.getCapability(cap, side);
 	}
 
 	public Color getColor() {
