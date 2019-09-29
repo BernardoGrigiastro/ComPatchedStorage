@@ -3,7 +3,7 @@
   "textures": {
     "particle": "compatchedstorage:blocks/chestbuildertop",
     "up": "compatchedstorage:blocks/chestbuildertop",
-    "down": "blocks/iron_block",
+    "down": "block/iron_block",
     "north": "compatchedstorage:blocks/chestbuilderfront",
     "east": "compatchedstorage:blocks/chestbuilderside",
     "south": "compatchedstorage:blocks/chestbuilderfront",

@@ -30,6 +30,7 @@ import shadows.compatched.packet.MessageCraftChest;
 import shadows.compatched.packet.MessageUpdateBuilder;
 import shadows.compatched.util.StorageInfo;
 import shadows.placebo.config.Configuration;
+import shadows.placebo.loot.LootSystem;
 import shadows.placebo.recipe.RecipeHelper;
 import shadows.placebo.util.NetworkUtils;
 
@@ -63,6 +64,7 @@ public class ComPatchedStorage {
 		HELPER.addShaped(CompactRegistry.BARREL, 3, 3, Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT, Blocks.IRON_BLOCK, Blocks.CHEST, Blocks.IRON_BLOCK, Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT);
 		HELPER.addShaped(CompactRegistry.FLUID_BARREL, 3, 3, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.IRON_BLOCK, Items.IRON_INGOT, Blocks.GLASS_PANE, Items.IRON_INGOT);
 		ConfigurationHandler.init();
+		LootSystem.defaultBlockTable(CompactRegistry.CHEST_BUILDER);
 	}
 
 	@SubscribeEvent
