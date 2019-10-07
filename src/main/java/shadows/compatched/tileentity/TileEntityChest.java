@@ -240,7 +240,7 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 	}
 
 	public Direction getDirection() {
-		return world.getBlockState(pos).get(HorizontalBlock.HORIZONTAL_FACING);
+		return this.getBlockState().get(HorizontalBlock.HORIZONTAL_FACING);
 	}
 
 	public float getLidAngle() {
