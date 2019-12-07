@@ -20,6 +20,7 @@ import shadows.compatched.tileentity.TileEntityBarrel;
 import shadows.compatched.tileentity.TileEntityBarrelFluid;
 import shadows.compatched.tileentity.TileEntityChest;
 
+@SuppressWarnings("deprecation")
 @EventBusSubscriber(value = Dist.CLIENT, modid = ComPatchedStorage.MODID, bus = Bus.MOD)
 public class ClientHandler {
 
