@@ -85,8 +85,8 @@ public class StorageInfo {
 
 		/* STORAGE */
 
-		int storageAmount = (int) (((sizeX * sizeY) / 8f) * storageModifier);
-		list.add(changeStackSize(type.equals(Type.BACKPACK) ? storageBackpack : storage, type.equals(Type.BACKPACK) ? storageAmount : (storageAmount / 2)));
+		int storageAmount = (int) (sizeX * sizeY / 8f * storageModifier);
+		list.add(changeStackSize(type.equals(Type.BACKPACK) ? storageBackpack : storage, type.equals(Type.BACKPACK) ? storageAmount : storageAmount / 2));
 
 		/* PRIMARY */
 
@@ -107,7 +107,7 @@ public class StorageInfo {
 
 		primaryStack = primary[primaryTier];
 
-		list.add(changeStackSize(primaryStack, (int) (((sizeX * sizeY) / 4.5f) / (primaryTier + 1) * primaryModifier)));
+		list.add(changeStackSize(primaryStack, (int) (sizeX * sizeY / 4.5f / (primaryTier + 1) * primaryModifier)));
 
 		/* SECONDARY */
 
@@ -126,11 +126,11 @@ public class StorageInfo {
 
 		secondaryStack = secondary[secondaryTier];
 
-		list.add(changeStackSize(secondaryStack, (int) (((sizeX * sizeY) / 4.5f) / (secondaryTier + 1) * secondaryModifier)));
+		list.add(changeStackSize(secondaryStack, (int) (sizeX * sizeY / 4.5f / (secondaryTier + 1) * secondaryModifier)));
 
 		/* BINDER */
 
-		int binderAmount = (int) (((sizeX * sizeY) / 8F) * binderModifier);
+		int binderAmount = (int) (sizeX * sizeY / 8F * binderModifier);
 		list.add(changeStackSize(type.equals(Type.BACKPACK) ? binderBackpack : binder, binderAmount / 2));
 
 		return list;

@@ -43,8 +43,8 @@ public class ContainerChest extends Container {
 		}
 		this.invX = chest.getInvX();
 		this.invY = chest.getInvY();
-		this.xSize = 7 + (invX < 9 ? (9 * 18) : (invX * 18)) + 7;
-		this.ySize = 15 + (invY * 18) + 13 + 54 + 4 + 18 + 7;
+		this.xSize = 7 + (invX < 9 ? 9 * 18 : invX * 18) + 7;
+		this.ySize = 15 + invY * 18 + 13 + 54 + 4 + 18 + 7;
 		setupSlots();
 	}
 
@@ -74,30 +74,30 @@ public class ContainerChest extends Container {
 	}
 
 	private void setupSlots() {
-		int slotX = (xSize / 2) - (invX * 18 / 2) + 1;
+		int slotX = xSize / 2 - invX * 18 / 2 + 1;
 		int slotY = 18;
 
 		int lastId = 0;
 
 		for (int y = 0; y < invY; y++) {
 			for (int x = 0; x < invX; x++) {
-				addSlot(new SlotItemHandler(chest.getItems(), lastId++, slotX + (x * 18), slotY + (y * 18)));
+				addSlot(new SlotItemHandler(chest.getItemHandler(), lastId++, slotX + x * 18, slotY + y * 18));
 			}
 		}
 
 		this.lastId = lastId;
 
-		slotX = (xSize / 2) - ((9 * 18) / 2) + 1;
-		slotY = slotY + (invY * 18) + 13;
+		slotX = xSize / 2 - 9 * 18 / 2 + 1;
+		slotY = slotY + invY * 18 + 13;
 
 		for (int x = 0; x < 9; x++) {
 			for (int y = 0; y < 3; y++) {
-				Slot slot = new Slot(player.inventory, x + y * 9 + 9, slotX + (x * 18), slotY + (y * 18));
+				Slot slot = new Slot(player.inventory, x + y * 9 + 9, slotX + x * 18, slotY + y * 18);
 				addSlot(slot);
 			}
 		}
 
-		slotY = slotY + (3 * 18) + 4;
+		slotY = slotY + 3 * 18 + 4;
 
 		for (int x = 0; x < 9; x++) {
 			boolean immovable = false;
@@ -106,7 +106,7 @@ public class ContainerChest extends Container {
 				immovable = true;
 			}
 
-			SlotImmovable slot = new SlotImmovable(player.inventory, x, slotX + (x * 18), slotY, immovable);
+			SlotImmovable slot = new SlotImmovable(player.inventory, x, slotX + x * 18, slotY, immovable);
 			addSlot(slot);
 		}
 	}

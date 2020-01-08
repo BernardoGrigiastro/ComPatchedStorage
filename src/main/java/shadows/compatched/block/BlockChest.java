@@ -3,6 +3,7 @@ package shadows.compatched.block;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.block.AbstractChestBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -17,7 +18,11 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.state.StateContainer;
+import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityMerger.ICallbackWrapper;
+import net.minecraft.tileentity.TileEntityMerger.ICallbackWrapper.Single;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
@@ -42,12 +47,12 @@ import shadows.compatched.inventory.ContainerChest;
 import shadows.compatched.tileentity.TileEntityChest;
 import shadows.compatched.util.EntityUtil;
 
-public class BlockChest extends HorizontalBlock {
+public class BlockChest extends AbstractChestBlock<TileEntityChest> {
 
 	public static final VoxelShape SHAPE = VoxelShapes.create(new AxisAlignedBB(0.0625D, 0.0D, 0.0625D, 0.9375D, 0.875D, 0.9375D));
 
 	public BlockChest() {
-		super(Block.Properties.create(Material.WOOD).sound(SoundType.WOOD).hardnessAndResistance(2).harvestLevel(1).harvestTool(ToolType.AXE));
+		super(Block.Properties.create(Material.WOOD).sound(SoundType.WOOD).hardnessAndResistance(2).harvestLevel(1).harvestTool(ToolType.AXE), () -> CompactRegistry.CHEST_TILE);
 	}
 
 	@Override
@@ -57,23 +62,23 @@ public class BlockChest extends HorizontalBlock {
 
 	@Override
 	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-		builder.add(HORIZONTAL_FACING);
+		builder.add(HorizontalBlock.HORIZONTAL_FACING);
 	}
 
 	@Override
 	public BlockState getStateForPlacement(BlockItemUseContext context) {
-		return getDefaultState().with(HORIZONTAL_FACING, EntityUtil.get2dOrientation(context.getPlayer()));
+		return getDefaultState().with(HorizontalBlock.HORIZONTAL_FACING, EntityUtil.get2dOrientation(context.getPlayer()));
 	}
 
 	@Override
-	public boolean onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+	public ActionResultType onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 		if (!world.isRemote) {
 			TileEntity te = world.getTileEntity(pos);
 			if (te instanceof TileEntityChest) {
 				TileEntityChest chest = (TileEntityChest) te;
 				if (!player.isSneaking()) {
 					NetworkHooks.openGui((ServerPlayerEntity) player, chest, buf -> ContainerChest.writeChest(buf, chest).writeBlockPos(pos));
-					return true;
+					return ActionResultType.SUCCESS;
 				} else {
 					ItemStack held = player.getHeldItem(hand);
 					if (!chest.isRetaining() && !held.isEmpty() && held.getItem() == Items.DIAMOND) {
@@ -86,7 +91,7 @@ public class BlockChest extends HorizontalBlock {
 				}
 			}
 		}
-		return !player.isSneaking();
+		return player.isSneaking() ? ActionResultType.PASS : ActionResultType.SUCCESS;
 	}
 
 	@Override
@@ -138,14 +143,24 @@ public class BlockChest extends HorizontalBlock {
 
 		TileEntityChest chest = te instanceof TileEntityChest ? (TileEntityChest) te : new TileEntityChest();
 		if (!chest.isRetaining()) {
-			for (int slot = 0; slot < chest.getItems().getSlots(); slot++) {
-				ItemStack s = chest.getItems().getStackInSlot(slot);
+			for (int slot = 0; slot < chest.getItemHandler().getSlots(); slot++) {
+				ItemStack s = chest.getItemHandler().getStackInSlot(slot);
 				if (!s.isEmpty()) stacks.add(s);
 			}
 			chest.write(stack.getOrCreateChildTag("BlockEntityTag")).remove("items");
 		} else chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
 		stacks.add(stack);
 		return stacks;
+	}
+
+	@Override
+	public TileEntity createNewTileEntity(IBlockReader p_196283_1_) {
+		return new TileEntityChest();
+	}
+
+	@Override
+	public ICallbackWrapper<? extends ChestTileEntity> getBlockEntitySource(BlockState state, World world, BlockPos pos, boolean something) {
+		return new Single<>((ChestTileEntity) world.getTileEntity(pos));
 	}
 
 }

@@ -20,5 +20,5 @@ public interface IChest {
 
 	void onClosed(PlayerEntity player);
 
-	ItemStackHandler getItems();
+	ItemStackHandler getItemHandler();
 }

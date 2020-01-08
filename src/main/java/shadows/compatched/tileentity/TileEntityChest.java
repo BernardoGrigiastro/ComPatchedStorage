@@ -12,8 +12,7 @@ import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -32,7 +31,7 @@ import shadows.compatched.inventory.InfoItemHandler;
 import shadows.compatched.util.StorageInfo;
 import shadows.placebo.recipe.VanillaPacketDispatcher;
 
-public class TileEntityChest extends TileEntity implements IChest, ITickableTileEntity, INamedContainerProvider {
+public class TileEntityChest extends ChestTileEntity implements IChest, INamedContainerProvider {
 
 	private Color color = Color.WHITE;
 	protected StorageInfo info;
@@ -91,7 +90,7 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 		super.write(tag);
 		tag.put("info", info.serialize());
 		tag.putBoolean("retaining", retaining);
-		tag.put("items", getItems().serializeNBT());
+		tag.put("items", getItemHandler().serializeNBT());
 		return tag;
 	}
 
@@ -100,7 +99,7 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 		super.read(tag);
 		this.retaining = tag.getBoolean("retaining");
 		this.info.deserialize(tag.getCompound("info"));
-		this.getItems().deserializeNBT(tag.getCompound("items"));
+		this.getItemHandler().deserializeNBT(tag.getCompound("items"));
 		this.color = getHue() == -1 ? Color.white : Color.getHSBColor(info.getHue() / 360f, 0.5f, 0.5f);
 	}
 
@@ -117,7 +116,7 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 	public void handleUpdateTag(CompoundNBT tag) {
 		this.retaining = tag.getBoolean("retaining");
 		this.info.deserialize(tag.getCompound("info"));
-		this.getItems().setSize(info.getSizeX() * info.getSizeY());
+		this.getItemHandler().setSize(info.getSizeX() * info.getSizeY());
 		this.color = getHue() == -1 ? Color.white : Color.getHSBColor(info.getHue() / 360f, 0.5f, 0.5f);
 	}
 
@@ -226,7 +225,7 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 	}
 
 	@Override
-	public ItemStackHandler getItems() {
+	public ItemStackHandler getItemHandler() {
 		return items;
 	}
 
@@ -244,6 +243,11 @@ public class TileEntityChest extends TileEntity implements IChest, ITickableTile
 	}
 
 	public float getLidAngle() {
+		return getLidAngle(1);
+	}
+
+	@Override
+	public float getLidAngle(float partialTicks) {
 		return lidAngle;
 	}
 

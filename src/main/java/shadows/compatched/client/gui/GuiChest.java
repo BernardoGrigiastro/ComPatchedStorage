@@ -1,6 +1,6 @@
 package shadows.compatched.client.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
@@ -47,8 +47,8 @@ public class GuiChest extends ContainerScreen<ContainerChest> {
 		this.invX = chest.getInvX();
 		this.invY = chest.getInvY();
 
-		this.xSize = 7 + (Math.max(9, invX) * 18) + 7;
-		this.ySize = 15 + (invY * 18) + 13 + 54 + 4 + 18 + 7;
+		this.xSize = 7 + Math.max(9, invX) * 18 + 7;
+		this.ySize = 15 + invY * 18 + 13 + 54 + 4 + 18 + 7;
 	}
 
 	@Override
@@ -62,23 +62,23 @@ public class GuiChest extends ContainerScreen<ContainerChest> {
 	public void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 		this.font.drawString(I18n.format("compatchedstorage.chest.inv", invX, invY), 8, 6, 4210752);
-		this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8, 15 + (invY * 18) + 5, 4210752);
+		this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8, 15 + invY * 18 + 5, 4210752);
 	}
 
 	@Override
 	public void drawGuiContainerBackgroundLayer(float i, int j, int k) {
-		GlStateManager.pushMatrix();
+		RenderSystem.pushMatrix();
 
-		GlStateManager.disableLighting();
-		GlStateManager.color3f(1, 1, 1);
+		RenderSystem.disableLighting();
+		RenderSystem.color3f(1, 1, 1);
 
 		RenderUtil.renderChestBackground(this, guiLeft, guiTop, invX, invY);
 
-		RenderUtil.renderSlots(guiLeft + 7 + ((Math.max(9, invX) * 18) / 2) - (invX * 18) / 2, guiTop + 17, invX, invY);
-		RenderUtil.renderSlots(guiLeft + 7 + ((((Math.max(9, invX)) * 18) / 2) - ((9 * 18) / 2)), guiTop + 17 + (invY * 18) + 13, 9, 3);
-		RenderUtil.renderSlots(guiLeft + 7 + ((((Math.max(9, invX)) * 18) / 2) - ((9 * 18) / 2)), guiTop + 17 + (invY * 18) + 13 + 54 + 4, 9, 1);
+		RenderUtil.renderSlots(guiLeft + 7 + Math.max(9, invX) * 18 / 2 - invX * 18 / 2, guiTop + 17, invX, invY);
+		RenderUtil.renderSlots(guiLeft + 7 + Math.max(9, invX) * 18 / 2 - 9 * 18 / 2, guiTop + 17 + invY * 18 + 13, 9, 3);
+		RenderUtil.renderSlots(guiLeft + 7 + Math.max(9, invX) * 18 / 2 - 9 * 18 / 2, guiTop + 17 + invY * 18 + 13 + 54 + 4, 9, 1);
 
-		GlStateManager.popMatrix();
+		RenderSystem.popMatrix();
 	}
 
 	@Override

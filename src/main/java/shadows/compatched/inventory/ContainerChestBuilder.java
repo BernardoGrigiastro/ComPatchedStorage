@@ -46,29 +46,29 @@ public class ContainerChestBuilder extends Container {
 
 	private void setupSlots() {
 		int slotY = 50 + 12;
-		int slotX = ((xSize / 2) - 36);
+		int slotX = xSize / 2 - 36;
 
 		for (int x = 0; x < 4; x++) {
-			addSlot(new SlotItemHandler(builder.getItems(), x, slotX + (x * 18) + 1, slotY + 21));
+			addSlot(new SlotItemHandler(builder.getItems(), x, slotX + x * 18 + 1, slotY + 21));
 		}
 
 		SlotUnplaceable chestSlot = new SlotUnplaceable(builder.getItems(), 4, 5 + xSize - 29, 8 + 108 - 12);
 		addSlot(chestSlot);
 
-		slotX = (xSize / 2) - ((9 * 18) / 2) + 1;
+		slotX = xSize / 2 - 9 * 18 / 2 + 1;
 		slotY = 8 + 108 + 10;
 
 		for (int x = 0; x < 9; x++) {
 			for (int y = 0; y < 3; y++) {
-				Slot slot = new Slot(player.inventory, x + y * 9 + 9, slotX + (x * 18), slotY + (y * 18));
+				Slot slot = new Slot(player.inventory, x + y * 9 + 9, slotX + x * 18, slotY + y * 18);
 				addSlot(slot);
 			}
 		}
 
-		slotY = slotY + (3 * 18) + 4;
+		slotY = slotY + 3 * 18 + 4;
 
 		for (int x = 0; x < 9; x++) {
-			Slot slot = new Slot(player.inventory, x, slotX + (x * 18), slotY);
+			Slot slot = new Slot(player.inventory, x, slotX + x * 18, slotY);
 			addSlot(slot);
 		}
 	}

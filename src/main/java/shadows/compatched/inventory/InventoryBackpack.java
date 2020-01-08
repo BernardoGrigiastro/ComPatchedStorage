@@ -59,7 +59,7 @@ public class InventoryBackpack implements IChest, INamedContainerProvider {
 	}
 
 	@Override
-	public ItemStackHandler getItems() {
+	public ItemStackHandler getItemHandler() {
 		return items;
 	}
 

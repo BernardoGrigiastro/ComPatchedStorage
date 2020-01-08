@@ -2,7 +2,7 @@ package shadows.compatched.client.gui;
 
 import java.util.ArrayList;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
@@ -69,15 +69,15 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 			builder.getInfo().setSizeX(s.getValueInt());
 			ComPatchedStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(builder.getInfo()));
 		});
-		columnSlider.setWidth((xSize / 2) - 7);
+		columnSlider.setWidth(xSize / 2 - 7);
 		addButton(columnSlider);
 
-		rowSlider = new GuiSlider(guiLeft + ((xSize / 2)) + 3, guiTop + offsetY + 22, 150, 20, "", " " + I18n.format("compatchedstorage.text.rows"), 1f, 12f, builder.getInfo().getSizeY(), false, true, b -> {
+		rowSlider = new GuiSlider(guiLeft + xSize / 2 + 3, guiTop + offsetY + 22, 150, 20, "", " " + I18n.format("compatchedstorage.text.rows"), 1f, 12f, builder.getInfo().getSizeY(), false, true, b -> {
 		}, s -> {
 			builder.getInfo().setSizeY(s.getValueInt());
 			ComPatchedStorage.CHANNEL.sendToServer(new MessageUpdateBuilder(builder.getInfo()));
 		});
-		rowSlider.setWidth((xSize / 2) - 7);
+		rowSlider.setWidth(xSize / 2 - 7);
 		addButton(rowSlider);
 
 		hueSlider = new GuiSliderHue(guiLeft + 5, guiTop + offsetY, I18n.format("compatchedstorage.text.hue") + " ", -1f, 360f, builder.getInfo().getHue(), s -> {
@@ -95,7 +95,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 		for (int t = 0; t < StorageInfo.Type.values().length; t++) {
 			StorageInfo.Type type = StorageInfo.Type.values()[t];
 
-			int startX = guiLeft + (26 * t);
+			int startX = guiLeft + 26 * t;
 			int startY = guiTop - 26;
 
 			int endX = startX + 26;
@@ -131,7 +131,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 				if (x < builder.getInfo().getMaterialCost().size() && builder.getInfo().getMaterialCost().get(x) != null) {
 					ItemStack stack = builder.getInfo().getMaterialCost().get(x);
 
-					int startX = guiLeft + ((xSize / 2) - 36) + (x * 18);
+					int startX = guiLeft + xSize / 2 - 36 + x * 18;
 					int startY = guiTop + 62;
 
 					int endX = startX + 18;
@@ -156,7 +156,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 				for (int t = 0; t < StorageInfo.Type.values().length; t++) {
 					StorageInfo.Type type = StorageInfo.Type.values()[t];
 
-					int startX = guiLeft + (26 * t);
+					int startX = guiLeft + 26 * t;
 					int startY = guiTop - 26;
 
 					int endX = startX + 26;
@@ -192,23 +192,23 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 		}
 
 		RenderHelper.disableStandardItemLighting();
-		GlStateManager.color3f(1, 1, 1);
+		RenderSystem.color3f(1, 1, 1);
 
 		blit(guiLeft, guiTop, 0, 0, 7, 7);
 
 		RenderUtil.renderBackground(this, guiLeft, guiTop, 162, 14 + 15 + 15 + 15 + 36);
 
-		int slotX = guiLeft + (xSize / 2) - ((9 * 18) / 2);
+		int slotX = guiLeft + xSize / 2 - 9 * 18 / 2;
 		int slotY = guiTop + 7 + 108 + 10;
 
 		RenderUtil.renderSlots(slotX, slotY, 9, 3);
 
-		slotY = slotY + (3 * 18) + 4;
+		slotY = slotY + 3 * 18 + 4;
 
 		RenderUtil.renderSlots(slotX, slotY, 9, 1);
 
 		slotY = guiTop + 50 + 12;
-		slotX = guiLeft + ((xSize / 2) - 36);
+		slotX = guiLeft + xSize / 2 - 36;
 
 		RenderUtil.renderSlots(slotX, slotY, 4, 1);
 
@@ -218,21 +218,18 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 
 		RenderUtil.renderSlots(guiLeft + 5 + xSize - 30, guiTop + 8 + 108 - 13, 1, 1);
 
-		GlStateManager.color3f(1, 1, 1);
+		RenderSystem.color3f(1, 1, 1);
 
 		StorageInfo info = builder.getInfo();
 
 		if (info == null) { return; }
 
 		slotY = guiTop + 50 + 12;
-		slotX = guiLeft + ((xSize / 2) - 36);
+		slotX = guiLeft + xSize / 2 - 36;
 
 		for (int x = 0; x < info.getMaterialCost().size(); x++) {
 			ItemStack stack = info.getMaterialCost().get(x);
-
-			RenderHelper.enableGUIStandardItemLighting();
-			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, slotX + 1 + (x * 18), slotY + 1);
-			RenderHelper.disableStandardItemLighting();
+			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, slotX + 1 + x * 18, slotY + 1);
 		}
 		font.drawString(this.getTitle().getFormattedText(), guiLeft + 7, guiTop + 7, 0x404040);
 		drawTab(builder.getInfo().getType(), builder.getInfo().getType().display);
@@ -263,20 +260,18 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 		i1 -= 28;
 
 		Minecraft.getInstance().getTextureManager().bindTexture(CREATIVE_INVENTORY_TABS);
-		GlStateManager.disableLighting();
-		GlStateManager.color3f(1F, 1F, 1F); //Forge: Reset color in case Items change it.
-		GlStateManager.enableBlend(); //Forge: Make sure blend is enabled else tabs show a white border.
+		RenderSystem.disableLighting();
+		RenderSystem.color3f(1F, 1F, 1F); //Forge: Reset color in case Items change it.
+		RenderSystem.enableBlend(); //Forge: Make sure blend is enabled else tabs show a white border.
 		this.blit(l, i1, j, k, 28, 32);
-		this.blitOffset = 100;
+		this.setBlitOffset(100);
 		this.itemRenderer.zLevel = 100.0F;
 		l = l + 6;
 		i1 = i1 + 8;
-		RenderHelper.enableGUIStandardItemLighting();
-		GlStateManager.enableRescaleNormal();
+		RenderSystem.enableRescaleNormal();
 		this.itemRenderer.renderItemAndEffectIntoGUI(stack, l, i1);
 		this.itemRenderer.renderItemOverlays(this.font, stack, l, i1);
-		RenderHelper.disableStandardItemLighting();
 		this.itemRenderer.zLevel = 0.0F;
-		this.blitOffset = 0;
+		this.setBlitOffset(0);
 	}
 }

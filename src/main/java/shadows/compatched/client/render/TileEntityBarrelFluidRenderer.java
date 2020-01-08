@@ -2,7 +2,7 @@ package shadows.compatched.client.render;
 
 import org.lwjgl.opengl.GL11;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -36,11 +36,11 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 
 			bindTexture(blockSheet);
 
-			GlStateManager.pushMatrix();
+			RenderSystem.pushMatrix();
 
-			GlStateManager.translated(x, y, z);
+			RenderSystem.translated(x, y, z);
 
-			GlStateManager.disableLighting();
+			RenderSystem.disableLighting();
 
 			int color = stack.getFluid().getAttributes().getColor(te.getWorld(), te.getPos());
 			if (stack.getFluid() == Fluids.WATER) color = BiomeColors.getWaterColor(te.getWorld(), te.getPos());
@@ -49,7 +49,7 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 				colors[0] = (float) (color >> 0x10 & 0xFF) / 0xFF;
 				colors[1] = (float) (color >> 0x8 & 0xFF) / 0xFF;
 				colors[2] = (float) (color & 0xFF) / 0xFF;
-				GlStateManager.color3f(colors[0], colors[1], colors[2]);
+				RenderSystem.color3f(colors[0], colors[1], colors[2]);
 			}
 
 			double px = 1D / 16;
@@ -96,22 +96,22 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 
 			tessellator.draw();
 
-			GlStateManager.popMatrix();
+			RenderSystem.popMatrix();
 
 			float scale = 0.01f;
 
-			GlStateManager.pushMatrix();
-			GlStateManager.translatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
+			RenderSystem.pushMatrix();
+			RenderSystem.translatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
 
 			Direction facing = te.getWorld().getBlockState(te.getPos()).get(BlockBarrel.HORIZONTAL_FACING);
 
-			GlStateManager.translatef(0f, 0.5001f, 0f);
-			GlStateManager.rotatef(180f, 0, 1f, 0f);
-			GlStateManager.rotatef(90f, 1, 0, 0);
+			RenderSystem.translatef(0f, 0.5001f, 0f);
+			RenderSystem.rotatef(180f, 0, 1f, 0f);
+			RenderSystem.rotatef(90f, 1, 0, 0);
 
-			GlStateManager.rotatef(facing.getHorizontalAngle(), 0, 0, 1f);
+			RenderSystem.rotatef(facing.getHorizontalAngle(), 0, 0, 1f);
 
-			GlStateManager.scalef(scale, scale, scale);
+			RenderSystem.scalef(scale, scale, scale);
 
 			FontRenderer fontrenderer = this.getFontRenderer();
 			byte b0 = 0;
@@ -120,7 +120,7 @@ public class TileEntityBarrelFluidRenderer extends TileEntityRenderer<TileEntity
 
 			fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, -5, b0);
 
-			GlStateManager.popMatrix();
+			RenderSystem.popMatrix();
 		}
 	}
 }

@@ -73,14 +73,14 @@ public class ComPatchedStorage {
 		Block block = state.getBlock();
 
 		if (block instanceof BlockChest && event.getPlayer().getHeldItem(event.getHand()).getItem() == Items.DIAMOND) {
-			state.onBlockActivated(event.getWorld(), event.getPlayer(), event.getHand(), BlockRayTraceResult.createMiss(null, null, event.getPos()));
+			state.onUse(event.getWorld(), event.getPlayer(), event.getHand(), BlockRayTraceResult.createMiss(null, null, event.getPos()));
 			event.setCanceled(true);
 			event.setCancellationResult(ActionResultType.SUCCESS);
 		}
 	}
 
 	public static int getColorFromHue(int hue) {
-		Color color = (hue == -1 ? Color.white : Color.getHSBColor(hue / 360f, 0.5f, 0.5f).brighter());
+		Color color = hue == -1 ? Color.white : Color.getHSBColor(hue / 360f, 0.5f, 0.5f).brighter();
 		return color.getRGB();
 	}
 

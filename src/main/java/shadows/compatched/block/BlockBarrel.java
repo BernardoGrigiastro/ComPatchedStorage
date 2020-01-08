@@ -14,6 +14,7 @@ import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -75,7 +76,7 @@ public class BlockBarrel extends HorizontalBlock {
 				ItemStack stack = barrel.giveItems(player);
 
 				if (!stack.isEmpty()) {
-					ItemEntity item = new ItemEntity(world, player.posX, player.posY, player.posZ);
+					ItemEntity item = new ItemEntity(world, player.getX(), player.getY(), player.getZ());
 					item.setItem(stack);
 					world.addEntity(item);
 				}
@@ -84,31 +85,26 @@ public class BlockBarrel extends HorizontalBlock {
 	}
 
 	@Override
-	public boolean onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
-		if (player.isSneaking()) return false;
+	public ActionResultType onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+		if (player.isSneaking()) return ActionResultType.PASS;
 
 		if (!world.isRemote) {
 			IBarrel barrel = (IBarrel) world.getTileEntity(pos);
-
 			if (barrel != null) {
 				if (player.getHeldItem(Hand.MAIN_HAND).isEmpty()) {
 					ItemStack stack = barrel.giveItems(player);
-
 					if (!stack.isEmpty()) {
-						ItemEntity item = new ItemEntity(world, player.posX, player.posY, player.posZ);
+						ItemEntity item = new ItemEntity(world, player.getX(), player.getY(), player.getZ());
 						item.setItem(stack);
-
 						world.addEntity(item);
 					}
-
 				} else {
 					player.setHeldItem(Hand.MAIN_HAND, barrel.takeItems(player.getHeldItem(Hand.MAIN_HAND), player));
-					return true;
 				}
 			}
 		}
 
-		return true;
+		return ActionResultType.SUCCESS;
 	}
 
 	@Override

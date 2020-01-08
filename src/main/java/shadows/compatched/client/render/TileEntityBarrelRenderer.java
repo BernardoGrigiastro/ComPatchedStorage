@@ -1,7 +1,7 @@
 package shadows.compatched.client.render;
 
 import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -26,14 +26,14 @@ public class TileEntityBarrelRenderer extends TileEntityRenderer<TileEntityBarre
 	public void renderText(TileEntityBarrel tileEntity, double coordX, double coordY, double coordZ, float scale) {
 		Direction facing = tileEntity.getWorld().getBlockState(tileEntity.getPos()).get(BlockBarrel.HORIZONTAL_FACING);
 
-		GlStateManager.pushMatrix();
-		GlStateManager.translatef((float) coordX + 0.5f, (float) coordY + 0.5f, (float) coordZ + 0.5f);
+		RenderSystem.pushMatrix();
+		RenderSystem.translatef((float) coordX + 0.5f, (float) coordY + 0.5f, (float) coordZ + 0.5f);
 
 		rotateElement(facing);
 
-		GlStateManager.translatef(0f, -0.225f, -0.44f);
+		RenderSystem.translatef(0f, -0.225f, -0.44f);
 
-		GlStateManager.scalef(scale, scale, scale);
+		RenderSystem.scalef(scale, scale, scale);
 
 		FontRenderer fontrenderer = this.getFontRenderer();
 		byte b0 = 0;
@@ -42,33 +42,33 @@ public class TileEntityBarrelRenderer extends TileEntityRenderer<TileEntityBarre
 
 		fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, 0, b0);
 
-		GlStateManager.popMatrix();
+		RenderSystem.popMatrix();
 	}
 
 	public void rotateElement(Direction facing) {
 		switch (facing) {
 		case WEST: {
-			GlStateManager.rotatef(180f, 1F, 0.0F, 0f);
-			GlStateManager.rotatef(270f, 0F, 1F, 0f);
+			RenderSystem.rotatef(180f, 1F, 0.0F, 0f);
+			RenderSystem.rotatef(270f, 0F, 1F, 0f);
 			break;
 		}
 		case EAST: {
-			GlStateManager.rotatef(180f, 1F, 0.0F, 0f);
-			GlStateManager.rotatef(90f, 0F, 1F, 0f);
+			RenderSystem.rotatef(180f, 1F, 0.0F, 0f);
+			RenderSystem.rotatef(90f, 0F, 1F, 0f);
 			break;
 		}
 		case SOUTH: {
-			GlStateManager.rotatef(180f, 1F, 0.0F, 0f);
-			GlStateManager.rotatef(180f, 0F, 1F, 0f);
+			RenderSystem.rotatef(180f, 1F, 0.0F, 0f);
+			RenderSystem.rotatef(180f, 0F, 1F, 0f);
 			break;
 		}
 		case NORTH: {
-			GlStateManager.rotatef(180f, 1F, 0.0F, 0f);
-			GlStateManager.rotatef(0f, 0F, 1F, 0f);
+			RenderSystem.rotatef(180f, 1F, 0.0F, 0f);
+			RenderSystem.rotatef(0f, 0F, 1F, 0f);
 			break;
 		}
 		default: {
-			GlStateManager.rotatef(180F, -1F, 0.0F, 3F);
+			RenderSystem.rotatef(180F, -1F, 0.0F, 3F);
 			break;
 		}
 		}
@@ -84,24 +84,24 @@ public class TileEntityBarrelRenderer extends TileEntityRenderer<TileEntityBarre
 
 			stack.setCount(1);
 
-			GlStateManager.pushMatrix();
+			RenderSystem.pushMatrix();
 
 			RenderHelper.enableStandardItemLighting();
 
-			GlStateManager.translatef((float) coordX + 0.5f, (float) coordY + 0.5f, (float) coordZ + 0.5f);
+			RenderSystem.translatef((float) coordX + 0.5f, (float) coordY + 0.5f, (float) coordZ + 0.5f);
 			rotateElement(facing);
-			GlStateManager.translatef(-(size / 3), -0.1f, -0.55f);
-			GlStateManager.scalef(size / 24, size / 24, 0.001f);
+			RenderSystem.translatef(-(size / 3), -0.1f, -0.55f);
+			RenderSystem.scalef(size / 24, size / 24, 0.001f);
 
-			GlStateManager.enableRescaleNormal();
+			RenderSystem.enableRescaleNormal();
 			RenderHelper.enableGUIStandardItemLighting();
 			int i = getWorld().getCombinedLight(tileEntity.getPos(), 0);
 			GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, i % 65536, i / 65536);
 			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, 0, 0);
 			RenderHelper.disableStandardItemLighting();
-			GlStateManager.disableRescaleNormal();
-			GlStateManager.disableBlend();
-			GlStateManager.popMatrix();
+			RenderSystem.disableRescaleNormal();
+			RenderSystem.disableBlend();
+			RenderSystem.popMatrix();
 		}
 	}
 }
