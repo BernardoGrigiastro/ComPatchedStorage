@@ -4,11 +4,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.items.ItemStackHandler;
 import shadows.compatched.util.StorageInfo;
 
-public interface IChest {
-
-	int getInvX();
-
-	int getInvY();
+public interface ICompatchedInventory {
 
 	StorageInfo getInfo();
 
@@ -16,9 +12,9 @@ public interface IChest {
 
 	void setHue(int hue);
 
-	void onOpened(PlayerEntity player);
-
-	void onClosed(PlayerEntity player);
-
 	ItemStackHandler getItemHandler();
+
+	void onOpen(PlayerEntity player);
+
+	void onClose(PlayerEntity player);
 }

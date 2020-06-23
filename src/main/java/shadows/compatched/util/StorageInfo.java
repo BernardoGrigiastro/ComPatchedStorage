@@ -145,15 +145,17 @@ public class StorageInfo {
 	}
 
 	public static enum Type {
-		CHEST("block.compactstorage.chest", new ItemStack(CompactRegistry.CHEST, 1)),
-		BACKPACK("compactstorage.backpack.inv", new ItemStack(CompactRegistry.BACKPACK, 1));
+		CHEST("block.compactstorage.chest"),
+		BACKPACK("compactstorage.backpack.inv");
 
 		public String name;
-		public ItemStack display;
 
-		Type(String name, ItemStack display) {
+		Type(String name) {
 			this.name = name;
-			this.display = display;
+		}
+
+		public ItemStack getAsStack() {
+			return new ItemStack(this == CHEST ? CompactRegistry.CHEST : CompactRegistry.BACKPACK);
 		}
 	}
 }

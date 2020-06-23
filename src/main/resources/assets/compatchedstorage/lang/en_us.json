@@ -15,8 +15,7 @@
 	"compatchedstorage.text.slots": "Slots: %s",
 	"compatchedstorage.text.hue2": "Hue: %s",
 	"compatchedstorage.text.white": "White",
-	"compatchedstorage.text.retaining": "Retaining",
-	"compatchedstorage.text.nonretaining": "Non-Retaining",
+	"compatchedstorage.text.retaining": "Holds items when broken.",
 	"compatchedstorage.text.empty": "Empty",
 	"compatchedstorage.text.fluidformat": "%s/%smB"
 }

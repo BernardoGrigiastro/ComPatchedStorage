@@ -17,10 +17,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.client.config.GuiButtonExt;
-import net.minecraftforge.fml.client.config.GuiSlider;
-import net.minecraftforge.fml.client.config.GuiUtils;
+import net.minecraftforge.fml.client.gui.GuiUtils;
 import shadows.compatched.ComPatchedStorage;
+import shadows.compatched.client.gui.elements.GuiButtonExt;
+import shadows.compatched.client.gui.elements.GuiSlider;
 import shadows.compatched.client.gui.elements.GuiSliderHue;
 import shadows.compatched.inventory.ContainerChestBuilder;
 import shadows.compatched.packet.MessageCraftChest;
@@ -187,7 +187,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 
 		for (StorageInfo.Type type : StorageInfo.Type.values()) {
 			if (!type.equals(builder.getInfo().getType())) {
-				drawTab(type, type.display);
+				drawTab(type, type.getAsStack()); //TODO: CACHEME
 			}
 		}
 
@@ -232,7 +232,7 @@ public class GuiChestBuilder extends ContainerScreen<ContainerChestBuilder> {
 			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, slotX + 1 + x * 18, slotY + 1);
 		}
 		font.drawString(this.getTitle().getFormattedText(), guiLeft + 7, guiTop + 7, 0x404040);
-		drawTab(builder.getInfo().getType(), builder.getInfo().getType().display);
+		drawTab(builder.getInfo().getType(), builder.getInfo().getType().getAsStack());
 	}
 
 	/**

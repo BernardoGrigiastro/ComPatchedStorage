@@ -7,16 +7,15 @@ import net.minecraft.block.AbstractChestBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.block.HorizontalBlock;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -24,7 +23,6 @@ import net.minecraft.tileentity.TileEntityMerger.ICallbackWrapper;
 import net.minecraft.tileentity.TileEntityMerger.ICallbackWrapper.Single;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -40,53 +38,53 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.LootContext.Builder;
 import net.minecraft.world.storage.loot.LootParameters;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.network.NetworkHooks;
 import shadows.compatched.CompactRegistry;
 import shadows.compatched.inventory.ContainerChest;
-import shadows.compatched.tileentity.TileEntityChest;
+import shadows.compatched.tileentity.CompatchedChestTileEntity;
 import shadows.compatched.util.EntityUtil;
 
-public class BlockChest extends AbstractChestBlock<TileEntityChest> {
+public class CompatchedChestBlock extends AbstractChestBlock<CompatchedChestTileEntity> {
 
 	public static final VoxelShape SHAPE = VoxelShapes.create(new AxisAlignedBB(0.0625D, 0.0D, 0.0625D, 0.9375D, 0.875D, 0.9375D));
 
-	public BlockChest() {
+	public CompatchedChestBlock() {
 		super(Block.Properties.create(Material.WOOD).sound(SoundType.WOOD).hardnessAndResistance(2).harvestLevel(1).harvestTool(ToolType.AXE), () -> CompactRegistry.CHEST_TILE);
 	}
 
 	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		return SHAPE;
+	public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+		return Blocks.CHEST.getDefaultState().getShape(world, pos);
 	}
 
 	@Override
 	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-		builder.add(HorizontalBlock.HORIZONTAL_FACING);
+		builder.add(HorizontalBlock.HORIZONTAL_FACING, ChestBlock.TYPE);
 	}
 
 	@Override
 	public BlockState getStateForPlacement(BlockItemUseContext context) {
-		return getDefaultState().with(HorizontalBlock.HORIZONTAL_FACING, EntityUtil.get2dOrientation(context.getPlayer()));
+		return getDefaultState().with(HorizontalBlock.HORIZONTAL_FACING, EntityUtil.get2dOrientation(context.getPlayer()).getOpposite());
 	}
 
 	@Override
 	public ActionResultType onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 		if (!world.isRemote) {
 			TileEntity te = world.getTileEntity(pos);
-			if (te instanceof TileEntityChest) {
-				TileEntityChest chest = (TileEntityChest) te;
+			if (te instanceof CompatchedChestTileEntity) {
+				CompatchedChestTileEntity chest = (CompatchedChestTileEntity) te;
 				if (!player.isSneaking()) {
 					NetworkHooks.openGui((ServerPlayerEntity) player, chest, buf -> ContainerChest.writeChest(buf, chest).writeBlockPos(pos));
 					return ActionResultType.SUCCESS;
 				} else {
 					ItemStack held = player.getHeldItem(hand);
-					if (!chest.isRetaining() && !held.isEmpty() && held.getItem() == Items.DIAMOND) {
+					if (!chest.isRetaining() && !held.isEmpty() && held.getItem().isIn(Tags.Items.GEMS_DIAMOND)) {
 						chest.setRetaining(true);
-						held.setCount(held.getCount() - 1);
+						held.shrink(1);
 						player.sendMessage(new TranslationTextComponent("compatchedstorage.msg.retain").setStyle(new Style().setColor(TextFormatting.AQUA)));
 						world.playSound(null, pos, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.AMBIENT, 1, 1);
-						chest.updateBlock();
 					}
 				}
 			}
@@ -101,7 +99,7 @@ public class BlockChest extends AbstractChestBlock<TileEntityChest> {
 
 	@Override
 	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		return new TileEntityChest();
+		return new CompatchedChestTileEntity();
 	}
 
 	@Override
@@ -118,19 +116,9 @@ public class BlockChest extends AbstractChestBlock<TileEntityChest> {
 	}
 
 	@Override
-	public boolean removedByPlayer(BlockState state, World world, BlockPos pos, PlayerEntity player, boolean willHarvest, IFluidState fluid) {
-		return super.removedByPlayer(state, world, pos, player, willHarvest, fluid);
-	}
-
-	@Override
-	public void fillItemGroup(ItemGroup group, NonNullList<ItemStack> items) {
-		super.fillItemGroup(group, items);
-	}
-
-	@Override
 	public ItemStack getItem(IBlockReader world, BlockPos pos, BlockState state) {
 		ItemStack stack = new ItemStack(this);
-		TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
+		CompatchedChestTileEntity chest = (CompatchedChestTileEntity) world.getTileEntity(pos);
 		chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
 		return stack;
 	}
@@ -141,7 +129,7 @@ public class BlockChest extends AbstractChestBlock<TileEntityChest> {
 		ItemStack stack = new ItemStack(CompactRegistry.CHEST);
 		TileEntity te = builder.get(LootParameters.BLOCK_ENTITY);
 
-		TileEntityChest chest = te instanceof TileEntityChest ? (TileEntityChest) te : new TileEntityChest();
+		CompatchedChestTileEntity chest = te instanceof CompatchedChestTileEntity ? (CompatchedChestTileEntity) te : new CompatchedChestTileEntity();
 		if (!chest.isRetaining()) {
 			for (int slot = 0; slot < chest.getItemHandler().getSlots(); slot++) {
 				ItemStack s = chest.getItemHandler().getStackInSlot(slot);
@@ -155,7 +143,7 @@ public class BlockChest extends AbstractChestBlock<TileEntityChest> {
 
 	@Override
 	public TileEntity createNewTileEntity(IBlockReader p_196283_1_) {
-		return new TileEntityChest();
+		return new CompatchedChestTileEntity();
 	}
 
 	@Override

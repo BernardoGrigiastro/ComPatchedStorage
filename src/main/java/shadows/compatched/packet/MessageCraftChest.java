@@ -12,7 +12,7 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent.Context;
 import shadows.compatched.inventory.ContainerChestBuilder;
-import shadows.compatched.tileentity.TileEntityChest;
+import shadows.compatched.tileentity.CompatchedChestTileEntity;
 import shadows.compatched.tileentity.TileEntityChestBuilder;
 import shadows.compatched.util.StorageInfo;
 import shadows.placebo.util.NetworkUtils;
@@ -97,8 +97,8 @@ public class MessageCraftChest extends MessageProvider<MessageCraftChest> {
 			}
 
 			if (hasRequiredMaterials && builder.getItems().getStackInSlot(4).isEmpty()) {
-				ItemStack stack = msg.info.getType().display.copy();
-				TileEntityChest chest = new TileEntityChest(msg.info);
+				ItemStack stack = msg.info.getType().getAsStack().copy();
+				CompatchedChestTileEntity chest = new CompatchedChestTileEntity(msg.info);
 				chest.write(stack.getOrCreateChildTag("BlockEntityTag"));
 				builder.getItems().setStackInSlot(4, stack);
 

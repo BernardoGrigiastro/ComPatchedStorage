@@ -15,7 +15,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.network.IContainerFactory;
 import net.minecraftforge.registries.ObjectHolder;
 import shadows.compatched.block.BlockBarrel;
-import shadows.compatched.block.BlockChest;
+import shadows.compatched.block.CompatchedChestBlock;
 import shadows.compatched.block.BlockChestBuilder;
 import shadows.compatched.block.BlockFluidBarrel;
 import shadows.compatched.inventory.ContainerChest;
@@ -24,19 +24,19 @@ import shadows.compatched.item.ItemBackpack;
 import shadows.compatched.item.ItemBlockChest;
 import shadows.compatched.tileentity.TileEntityBarrel;
 import shadows.compatched.tileentity.TileEntityBarrelFluid;
-import shadows.compatched.tileentity.TileEntityChest;
+import shadows.compatched.tileentity.CompatchedChestTileEntity;
 import shadows.compatched.tileentity.TileEntityChestBuilder;
 
 @ObjectHolder(ComPatchedStorage.MODID)
 @EventBusSubscriber(modid = ComPatchedStorage.MODID, bus = Bus.MOD)
 public class CompactRegistry {
 
-	public static final BlockChest CHEST = null;
+	public static final CompatchedChestBlock CHEST = null;
 	public static final BlockChestBuilder CHEST_BUILDER = null;
 	public static final BlockBarrel BARREL = null;
 	public static final BlockFluidBarrel FLUID_BARREL = null;
 	public static final ItemBackpack BACKPACK = null;
-	public static final TileEntityType<TileEntityChest> CHEST_TILE = null;
+	public static final TileEntityType<CompatchedChestTileEntity> CHEST_TILE = null;
 	public static final TileEntityType<TileEntityChestBuilder> BUILDER_TILE = null;
 	public static final TileEntityType<TileEntityBarrel> BARREL_TILE = null;
 	public static final TileEntityType<TileEntityBarrelFluid> FLUID_BARREL_TILE = null;
@@ -45,7 +45,7 @@ public class CompactRegistry {
 
 	@SubscribeEvent
 	public static void blocks(Register<Block> e) {
-		e.getRegistry().registerAll(new BlockChest().setRegistryName("chest"), new BlockChestBuilder().setRegistryName("chest_builder"), new BlockBarrel().setRegistryName("barrel"), new BlockFluidBarrel().setRegistryName("fluid_barrel"));
+		e.getRegistry().registerAll(new CompatchedChestBlock().setRegistryName("chest"), new BlockChestBuilder().setRegistryName("chest_builder"), new BlockBarrel().setRegistryName("barrel"), new BlockFluidBarrel().setRegistryName("fluid_barrel"));
 	}
 
 	@SubscribeEvent
@@ -71,7 +71,7 @@ public class CompactRegistry {
 
 	@SubscribeEvent
 	public static void tiles(Register<TileEntityType<?>> e) {
-		e.getRegistry().register(new TileEntityType<>(TileEntityChest::new, ImmutableSet.of(CHEST), null).setRegistryName("chest_tile"));
+		e.getRegistry().register(new TileEntityType<>(CompatchedChestTileEntity::new, ImmutableSet.of(CHEST), null).setRegistryName("chest_tile"));
 		e.getRegistry().register(new TileEntityType<>(TileEntityChestBuilder::new, ImmutableSet.of(CHEST_BUILDER), null).setRegistryName("builder_tile"));
 		e.getRegistry().register(new TileEntityType<>(TileEntityBarrel::new, ImmutableSet.of(BARREL), null).setRegistryName("barrel_tile"));
 		e.getRegistry().register(new TileEntityType<>(TileEntityBarrelFluid::new, ImmutableSet.of(FLUID_BARREL), null).setRegistryName("fluid_barrel_tile"));

@@ -1,107 +1,89 @@
 package shadows.compatched.client.render;
 
-import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.client.renderer.Quaternion;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import shadows.compatched.block.BlockBarrel;
 import shadows.compatched.tileentity.TileEntityBarrel;
 
 public class TileEntityBarrelRenderer extends TileEntityRenderer<TileEntityBarrel> {
-	public TextureManager textureManager;
+
+	public TileEntityBarrelRenderer(TileEntityRendererDispatcher terd) {
+		super(terd);
+	}
 
 	@Override
-	public void render(TileEntityBarrel te, double x, double y, double z, float partialTicks, int destroyStage) {
+	public void render(TileEntityBarrel te, float partial, MatrixStack stack, IRenderTypeBuffer buf, int p_225616_5_, int p_225616_6_) {
 		if (te == null) return;
-		renderText(te, x, y, z, 0.01f);
-		renderItem(te, x, y, z, 1f, 0.5f);
+		renderText(te, stack, buf, 0.01F);
+		renderItem(te, stack, buf, 1, 0.5F);
 	}
 
-	public void renderText(TileEntityBarrel tileEntity, double coordX, double coordY, double coordZ, float scale) {
+	public void renderText(TileEntityBarrel tileEntity, MatrixStack stack, IRenderTypeBuffer buf, float scale) {
 		Direction facing = tileEntity.getWorld().getBlockState(tileEntity.getPos()).get(BlockBarrel.HORIZONTAL_FACING);
-
-		RenderSystem.pushMatrix();
-		RenderSystem.translatef((float) coordX + 0.5f, (float) coordY + 0.5f, (float) coordZ + 0.5f);
-
-		rotateElement(facing);
-
-		RenderSystem.translatef(0f, -0.225f, -0.44f);
-
-		RenderSystem.scalef(scale, scale, scale);
-
-		FontRenderer fontrenderer = this.getFontRenderer();
-		byte b0 = 0;
-
-		String s = tileEntity.getText();
-
-		fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, 0, b0);
-
-		RenderSystem.popMatrix();
+		stack.push();
+		stack.translate(0.0D, -0.225, -0.44);
+		rotateElement(stack, facing);
+		stack.scale(-0.025F, -0.025F, 0.025F);
+		Matrix4f matrix4f = stack.peek().getModel();
+		String name = tileEntity.getText();
+		FontRenderer fontrenderer = Minecraft.getInstance().fontRenderer;
+		float f2 = (float) (-fontrenderer.getStringWidth(name) / 2);
+		fontrenderer.draw(name, f2, 0, -1, false, matrix4f, buf, false, 0, 0);
+		stack.pop();
 	}
 
-	public void rotateElement(Direction facing) {
+	public void rotateElement(MatrixStack stack, Direction facing) {
 		switch (facing) {
 		case WEST: {
-			RenderSystem.rotatef(180f, 1F, 0.0F, 0f);
-			RenderSystem.rotatef(270f, 0F, 1F, 0f);
+			stack.multiply(new Quaternion(180f, 1F, 0.0F, 0f));
+			stack.multiply(new Quaternion(270f, 0F, 1F, 0f));
 			break;
 		}
 		case EAST: {
-			RenderSystem.rotatef(180f, 1F, 0.0F, 0f);
-			RenderSystem.rotatef(90f, 0F, 1F, 0f);
+			stack.multiply(new Quaternion(180f, 1F, 0.0F, 0f));
+			stack.multiply(new Quaternion(90f, 0F, 1F, 0f));
 			break;
 		}
 		case SOUTH: {
-			RenderSystem.rotatef(180f, 1F, 0.0F, 0f);
-			RenderSystem.rotatef(180f, 0F, 1F, 0f);
+			stack.multiply(new Quaternion(180f, 1F, 0.0F, 0f));
+			stack.multiply(new Quaternion(180f, 0F, 1F, 0f));
 			break;
 		}
 		case NORTH: {
-			RenderSystem.rotatef(180f, 1F, 0.0F, 0f);
-			RenderSystem.rotatef(0f, 0F, 1F, 0f);
+			stack.multiply(new Quaternion(180f, 1F, 0.0F, 0f));
+			stack.multiply(new Quaternion(0f, 0F, 1F, 0f));
 			break;
 		}
-		default: {
-			RenderSystem.rotatef(180F, -1F, 0.0F, 3F);
-			break;
-		}
+		default:
 		}
 	}
 
-	public void renderItem(TileEntityBarrel tileEntity, double coordX, double coordY, double coordZ, float scale, float size) {
+	public void renderItem(TileEntityBarrel tileEntity, MatrixStack stack, IRenderTypeBuffer buf, float scale, float size) {
 		Direction facing = tileEntity.getWorld().getBlockState(tileEntity.getPos()).get(BlockBarrel.HORIZONTAL_FACING);
-		ItemStack stack = tileEntity.getBarrelStack();
-
-		if (!stack.isEmpty()) {
-
-			if (stack.isEmpty()) { return; }
-
-			stack.setCount(1);
-
-			RenderSystem.pushMatrix();
-
-			RenderHelper.enableStandardItemLighting();
-
-			RenderSystem.translatef((float) coordX + 0.5f, (float) coordY + 0.5f, (float) coordZ + 0.5f);
-			rotateElement(facing);
-			RenderSystem.translatef(-(size / 3), -0.1f, -0.55f);
-			RenderSystem.scalef(size / 24, size / 24, 0.001f);
-
+		ItemStack item = tileEntity.getBarrelStack();
+		if (!item.isEmpty()) {
+			item.setCount(1);
+			stack.push();
+			rotateElement(stack, facing);
+			stack.translate(-(size / 3), -0.1f, -0.55f);
+			stack.scale(size / 24, size / 24, 0.001f);
 			RenderSystem.enableRescaleNormal();
-			RenderHelper.enableGUIStandardItemLighting();
-			int i = getWorld().getCombinedLight(tileEntity.getPos(), 0);
-			GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, i % 65536, i / 65536);
-			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(stack, 0, 0);
+			Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(item, 0, 0);
 			RenderHelper.disableStandardItemLighting();
 			RenderSystem.disableRescaleNormal();
 			RenderSystem.disableBlend();
-			RenderSystem.popMatrix();
+			stack.pop();
 		}
 	}
 }

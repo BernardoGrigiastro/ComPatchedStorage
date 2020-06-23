@@ -12,7 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import shadows.compatched.inventory.ContainerChest;
-import shadows.compatched.inventory.IChest;
+import shadows.compatched.inventory.ICompatchedInventory;
 import shadows.compatched.inventory.InventoryBackpack;
 import shadows.compatched.util.RenderUtil;
 
@@ -24,7 +24,7 @@ public class GuiChest extends ContainerScreen<ContainerChest> {
 	private int invX;
 	private int invY;
 
-	public IChest chest;
+	public ICompatchedInventory chest;
 
 	private KeyBinding[] hotbar;
 	private int backpackSlot;
@@ -44,8 +44,8 @@ public class GuiChest extends ContainerScreen<ContainerChest> {
 			backpackSlot = player.inventory.currentItem;
 		}
 
-		this.invX = chest.getInvX();
-		this.invY = chest.getInvY();
+		this.invX = chest.getInfo().getSizeX();
+		this.invY = chest.getInfo().getSizeY();
 
 		this.xSize = 7 + Math.max(9, invX) * 18 + 7;
 		this.ySize = 15 + invY * 18 + 13 + 54 + 4 + 18 + 7;

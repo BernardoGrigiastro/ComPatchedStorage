@@ -6,7 +6,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import shadows.compatched.ComPatchedStorage;
 import shadows.compatched.CompactRegistry;
-import shadows.compatched.tileentity.TileEntityChest;
+import shadows.compatched.tileentity.CompatchedChestTileEntity;
 
 public class CreativeTabCompactStorage extends ItemGroup {
 
@@ -18,7 +18,7 @@ public class CreativeTabCompactStorage extends ItemGroup {
 	@Nonnull
 	public ItemStack createIcon() {
 		ItemStack stack = new ItemStack(CompactRegistry.CHEST);
-		new TileEntityChest().write(stack.getOrCreateChildTag("BlockEntityTag"));
+		new CompatchedChestTileEntity().write(stack.getOrCreateChildTag("BlockEntityTag"));
 		return stack;
 	}
 }

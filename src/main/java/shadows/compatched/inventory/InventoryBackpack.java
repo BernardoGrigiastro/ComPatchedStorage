@@ -6,12 +6,16 @@ import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.items.ItemStackHandler;
 import shadows.compatched.util.StorageInfo;
 import shadows.compatched.util.StorageInfo.Type;
 
-public class InventoryBackpack implements IChest, INamedContainerProvider {
+public class InventoryBackpack implements ICompatchedInventory, INamedContainerProvider {
 
 	protected ItemStack backpack;
 	protected int slot;
@@ -25,27 +29,20 @@ public class InventoryBackpack implements IChest, INamedContainerProvider {
 	}
 
 	@Override
-	public int getInvX() {
-		return info.getSizeX();
-	}
-
-	@Override
-	public int getInvY() {
-		return info.getSizeY();
-	}
-
-	@Override
 	public StorageInfo getInfo() {
 		return info;
 	}
 
 	@Override
-	public void onOpened(PlayerEntity player) {
+	public void onOpen(PlayerEntity player) {
 	}
 
 	@Override
-	public void onClosed(PlayerEntity player) {
+	public void onClose(PlayerEntity player) {
 		write(backpack.getOrCreateChildTag("BlockEntityTag"));
+		World world = player.world;
+		BlockPos pos = player.getPosition();
+		if (!world.isRemote) world.playSound(null, pos.getX() + 0.5d, pos.getY() + 0.5d, pos.getZ() + 0.5d, SoundEvents.BLOCK_WOOL_STEP, SoundCategory.BLOCKS, 0.5F, world.rand.nextFloat() * 0.1F + 0.9F);
 	}
 
 	@Override

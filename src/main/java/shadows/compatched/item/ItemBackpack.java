@@ -8,7 +8,6 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -26,7 +25,7 @@ import net.minecraftforge.fml.network.NetworkHooks;
 import shadows.compatched.ComPatchedStorage;
 import shadows.compatched.inventory.ContainerChest;
 import shadows.compatched.inventory.InventoryBackpack;
-import shadows.compatched.tileentity.TileEntityChest;
+import shadows.compatched.tileentity.CompatchedChestTileEntity;
 import shadows.compatched.util.StorageInfo;
 import shadows.compatched.util.StorageInfo.Type;
 
@@ -56,7 +55,7 @@ public class ItemBackpack extends Item {
 	public void fillItemGroup(ItemGroup group, NonNullList<ItemStack> items) {
 		if (this.isInGroup(group)) {
 			ItemStack stack = new ItemStack(this);
-			new TileEntityChest().write(stack.getOrCreateChildTag("BlockEntityTag"));
+			new CompatchedChestTileEntity().write(stack.getOrCreateChildTag("BlockEntityTag"));
 			items.add(stack);
 		}
 	}
@@ -78,10 +77,4 @@ public class ItemBackpack extends Item {
 		}
 	}
 
-	@Override
-	public CompoundNBT getShareTag(ItemStack stack) {
-		CompoundNBT tag = super.getShareTag(stack).copy();
-		tag.getCompound("BlockEntityTag").remove("items");
-		return tag;
-	}
 }

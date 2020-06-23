@@ -24,7 +24,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
-import shadows.compatched.block.BlockChest;
+import shadows.compatched.block.CompatchedChestBlock;
 import shadows.compatched.creativetabs.CreativeTabCompactStorage;
 import shadows.compatched.packet.MessageCraftChest;
 import shadows.compatched.packet.MessageUpdateBuilder;
@@ -72,7 +72,7 @@ public class ComPatchedStorage {
 		BlockState state = event.getWorld().getBlockState(event.getPos());
 		Block block = state.getBlock();
 
-		if (block instanceof BlockChest && event.getPlayer().getHeldItem(event.getHand()).getItem() == Items.DIAMOND) {
+		if (block instanceof CompatchedChestBlock && event.getPlayer().getHeldItem(event.getHand()).getItem() == Items.DIAMOND) {
 			state.onUse(event.getWorld(), event.getPlayer(), event.getHand(), BlockRayTraceResult.createMiss(null, null, event.getPos()));
 			event.setCanceled(true);
 			event.setCancellationResult(ActionResultType.SUCCESS);

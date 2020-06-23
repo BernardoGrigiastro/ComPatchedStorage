@@ -30,8 +30,8 @@ public class ConfigurationHandler {
 
 	public static void init() {
 
-		storage = getItemFromConfig(configuration, "chestStorage", "builder", "minecraft:chest", "This is used as the first component in the Builder when building a CHEST.");
-		storageBackpack = getItemFromConfig(configuration, "backpackStorage", "builder", "minecraft:white_wool", "This is used as the first component in the Builder when building a BACKPACK.");
+		storage = getItemFromConfig(configuration, "chestStorage", "builder", "minecraft:chest", "This is used as the first component in the Builder when building a Chest.");
+		storageBackpack = getItemFromConfig(configuration, "backpackStorage", "builder", "minecraft:white_wool", "This is used as the first component in the Builder when building a backpack.");
 
 		primary = getItemsFromConfig(configuration, "primaryItem", "builder", new String[] { "minecraft:iron_ingot" }, "These values are used for the first material cost in the chest builder, you can add as many values as you like, it will configure itself to use all of them.");
 		secondary = getItemsFromConfig(configuration, "secondaryItem", "builder", new String[] { "minecraft:iron_bars" }, "These values are used for the second material cost in the chest builder, you can add as many values as you like, it will configure itself to use all of them.");
